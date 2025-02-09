@@ -15,6 +15,7 @@
   };
 
   let loaded: boolean = $state(false);
+  let showFinishedLectures: boolean = $state(true);
   let searchBarInput: string = $state("");
   let currentBranch: string = $state("SOC");
   let currentOffset: number = $state(0);
@@ -26,6 +27,18 @@
     if (currentBranch === "SOB") return "sob";
     if (currentBranch === "NIC") return "nic";
     return "";
+  };
+
+  const isOver = (lecture: Lecture) => {
+    if (lecture.time.end == undefined) return false;
+    if (lecture.offset > 0) return false;
+    if (showFinishedLectures) return false;
+    const currentDT = new Date();
+    const currentMinutes = currentDT.getHours() * 60 + currentDT.getMinutes();
+    const lectureTimeStr = lecture.time.end.split(":");
+    const lectureMinutes =
+      parseInt(lectureTimeStr[0]) * 60 + parseInt(lectureTimeStr[1]);
+    return currentMinutes > lectureMinutes;
   };
 
   const validateSearchQuery = (lecture: Lecture) => {
@@ -107,10 +120,10 @@
 <div class="flex flex-col flex-1 h-full">
   <div class="px-8 py-8 flex flex-col items-center my-2">
     <h1
-      class="text-muted-foreground text-xl flex items-center flex-row gap-2 mb-1"
+      class="text-muted-foreground text-2xl sm:text-3xl flex items-center flex-row gap-2 mb-1"
     >
-      <Search class="w-5 h-5" />
-      Search Lectures
+      <Search class="w-6 h-6" />
+      Search
     </h1>
     <div class="flex flex-row w-full gap-2 mt-2">
       <Input
@@ -141,6 +154,15 @@
         aria-current={searchBarInput === "DSE24.2F" ? "true" : null}
         >DSE24.2F</button
       >
+      <button
+        class="tag"
+        onclick={() => {
+          showFinishedLectures = !showFinishedLectures;
+        }}
+        aria-current={showFinishedLectures ? "true" : null}
+      >
+        Show Finished
+      </button>
     </div>
   </div>
 
@@ -155,7 +177,7 @@
       <div class="flex flex-col gap-2">
         {#each lectures as item}
           {#if item.properties.branch === currentBranch || currentBranch === "ALL"}
-            {#if validateSearchQuery(item) && item.offset == currentOffset}
+            {#if !isOver(item) && validateSearchQuery(item) && item.offset == currentOffset}
               <LectureSlide lecture={item} />
             {/if}
           {/if}
@@ -222,6 +244,6 @@
   }
 
   .tag[aria-current="true"] {
-    @apply bg-yellow-500 text-black;
+    @apply bg-blue-300 text-black;
   }
 </style>

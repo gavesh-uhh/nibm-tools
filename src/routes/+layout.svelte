@@ -42,20 +42,23 @@
       </AlertDialog.Footer>
     </AlertDialog.Content>
   </AlertDialog.Root>
-  <div class="flex flex-row gap-1 justify-center items-center">
-    <Button
-      href="https://www.gavesh.live"
-      class="mr-1"
-      size="icon"
-      variant="outline"
+  <div class="flex flex-row gap-1 justify-start items-center">
+    <div
+      class="flex flex-row gap-1 items-center justify-center ring-border ring-1 px-2 py-2 rounded-md"
     >
-      ❤️
-    </Button>
-    <h1 class="text-xl">
-      <span class="text-blue-500 font-bold">NIBM</span>
-      <span class="left-[-2px] relative opacity-40">.gavesh.live</span>
-    </h1>
+      <Button
+        href="https://www.gavesh.live"
+        class="mr-1 w-10 h-10 flex items-center justify-center"
+        size="icon"
+        variant="outline"
+      >
+        👈
+      </Button>
+      <div class="flex flex-col mr-1">
+        <h1 class="text-sm text-blue-500 font-bold">NIBM Tools</h1>
+        <p class="text-xs text-muted-foreground">click the button dammit</p>
+      </div>
+    </div>
   </div>
   {@render children()}
 </div>
-
