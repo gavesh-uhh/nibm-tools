@@ -8,14 +8,14 @@ const SUPPORTED_BRANCHES = [
   { keyword: "NIC", name: "NIC" },
   { keyword: "RJ", name: "SOB" }
 ];
-const DAYS_MARGIN = 3;
 
 export const GET = async ({ url }: { url: URL }): Promise<Response> => {
   const date = url.searchParams.get("date");
+  const day_limit = parseInt(url.searchParams.get("limit") ?? "3");
   if (!date) return json({ error: "Date is required" }, { status: 400 });
   const requests: Promise<Lecture[]>[] = [];
 
-  for (let i = 0; i < DAYS_MARGIN; i++) {
+  for (let i = 0; i < day_limit; i++) {
     const futureDate = getOffsettedDate(date, i);
     const branchRequests = SUPPORTED_BRANCHES.map((branch) =>
       fetchData(`${SCRAPE_URL}?wing=${branch.keyword}&date=${futureDate}`, branch.name, i)
