@@ -118,7 +118,7 @@
       {lecture.time.start} - {lecture.time.end}
     </h1>
   </div>
-  {#if is_going_on}
+  {#if is_going_on && lecture.offset == 0}
     <hr class="mt-2" />
     <div class="flex mt-3 items-center w-full justify-between">
       <div class="opacity-80 w-full items-center flex flex-row gap-2">
