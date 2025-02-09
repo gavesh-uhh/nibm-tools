@@ -14,7 +14,9 @@
 
   onMount(() => {
     updateTime();
-    setInterval(updateTime, 60000);
+    setInterval(() => {
+      updateTime();
+    }, 1000);
   });
 
   const updateTime = () => {
