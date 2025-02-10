@@ -118,7 +118,7 @@
 </div>
 
 <div class="flex flex-col flex-1 h-full">
-  <div class="px-8 py-8 flex flex-col items-center my-2">
+  <div class="p-6 flex flex-col items-center my-2">
     <h1
       class="text-muted-foreground text-2xl sm:text-3xl flex items-center flex-row gap-2 mb-1"
     >
