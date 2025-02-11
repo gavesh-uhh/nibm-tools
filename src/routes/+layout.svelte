@@ -1,5 +1,4 @@
 <script lang="ts">
-  import Button from "$lib/components/ui/button/button.svelte";
   import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
   import { onMount } from "svelte";
   import "../app.css";
@@ -42,23 +41,5 @@
       </AlertDialog.Footer>
     </AlertDialog.Content>
   </AlertDialog.Root>
-  <div class="flex flex-row gap-1 justify-start items-center">
-    <div
-      class="flex flex-row gap-1 items-center justify-center ring-border ring-1 px-2 py-2 rounded-md"
-    >
-      <Button
-        href="https://www.gavesh.live"
-        class="mr-1 w-10 h-10 flex items-center justify-center"
-        size="icon"
-        variant="outline"
-      >
-        👈
-      </Button>
-      <div class="flex flex-col mr-1">
-        <h1 class="text-sm text-blue-500 font-bold">NIBM Tools</h1>
-        <p class="text-xs text-muted-foreground">click the button dammit</p>
-      </div>
-    </div>
-  </div>
   {@render children()}
 </div>

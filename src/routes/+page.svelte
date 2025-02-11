@@ -1,7 +1,7 @@
 <script lang="ts">
   import { getDay, getRandomQuote } from "$lib/nibm";
 
-  import LectureSlide from "./comps/LectureSlide.svelte";
+  import LectureSlide from "./components/LectureSlide.svelte";
   import { Search, X, Loader2 } from "lucide-svelte";
   import Input from "$lib/components/ui/input/input.svelte";
   import Button from "$lib/components/ui/button/button.svelte";
@@ -118,59 +118,73 @@
 </div>
 
 <div class="flex flex-col flex-1 h-full">
-  <div class="p-6 flex flex-col items-center my-2">
-    <h1
-      class="text-muted-foreground text-2xl sm:text-3xl flex items-center flex-row gap-2 mb-1"
-    >
-      <Search class="w-6 h-6" />
-      Search
-    </h1>
-    <div class="flex flex-row w-full gap-2 mt-2">
-      <Input
-        class="text-sm w-full"
-        bind:value={searchBarInput}
-        placeholder="DSE242.2F, Harison Hall, etc."
-      ></Input>
-      <Button
-        size="icon"
-        variant="destructive"
-        on:click={() => (searchBarInput = "")}
+  <div class="flex flex-col items-center w-full">
+    <div class="px-2 py-8 flex flex-col items-center my-2 max-w-[800px] w-full">
+      <h1
+        class="text-muted-foreground text-2xl sm:text-3xl flex items-center flex-row gap-2 mb-1"
       >
-        <X class="w-3 h-3" />
-      </Button>
-    </div>
-    <div class="w-full mt-2 flex flex-row gap-2">
-      <button
-        class={"branch-select " + getBranchColorClass()}
-        onclick={toggleBranch}
-      >
-        Branch - {currentBranch}
-      </button>
-      <button
-        class="tag"
-        onclick={() => {
-          searchBarInput = "DSE24.2F";
-        }}
-        aria-current={searchBarInput === "DSE24.2F" ? "true" : null}
-        >DSE24.2F</button
-      >
-      <button
-        class="tag"
-        onclick={() => {
-          showFinishedLectures = !showFinishedLectures;
-        }}
-        aria-current={showFinishedLectures ? "true" : null}
-      >
-        Show Finished
-      </button>
+        <Search class="w-6 h-6" />
+        Search
+      </h1>
+      <div class="flex flex-row w-full gap-2 mt-2">
+        <Input
+          class="text-sm w-full"
+          bind:value={searchBarInput}
+          placeholder="DSE242.2F, Harison Hall, etc."
+        ></Input>
+        <Button
+          size="icon"
+          variant="destructive"
+          on:click={() => (searchBarInput = "")}
+        >
+          <X class="w-3 h-3" />
+        </Button>
+      </div>
+      <div class="w-full mt-2 flex flex-row gap-1 flex-wrap">
+        <button
+          class={"branch-select w-full " + getBranchColorClass()}
+          onclick={toggleBranch}
+        >
+          {#if currentBranch === "ALL"}
+            Showing Every Branch
+          {:else}
+            Selected Branch - {currentBranch}
+          {/if}
+        </button>
+      </div>
+      <div class="w-full mt-2 flex flex-row gap-1 flex-wrap">
+        <button
+          class="tag"
+          onclick={() => {
+            searchBarInput = "DSE24.2F";
+          }}
+          aria-current={searchBarInput === "DSE24.2F" ? "true" : null}
+          >DSE24.2F</button
+        >
+        <button
+          class="tag"
+          onclick={() => {
+            showFinishedLectures = !showFinishedLectures;
+          }}
+          aria-current={showFinishedLectures ? "true" : null}
+        >
+          Show Finished
+        </button>
+      </div>
     </div>
   </div>
-
   {#if loaded}
     {#if lectures.filter((item) => (item.properties.branch === currentBranch || currentBranch === "ALL") && validateSearchQuery(item) && item.offset == currentOffset).length === 0}
       <div class="h-full flex-1 flex flex-col gap-2 items-center">
         <h2 class="text-sm text-muted-foreground mt-10">
-          Nothing found for {searchBarInput}
+          {#if searchBarInput !== ""}
+            Nothing found for {searchBarInput}
+          {:else}
+            No lectures found on the server for {getDay(
+              currentDate,
+              currentOffset,
+            )}
+          {/if}
         </h2>
       </div>
     {:else}

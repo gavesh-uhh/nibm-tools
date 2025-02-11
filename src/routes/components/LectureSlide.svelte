@@ -138,28 +138,17 @@
 <style>
   .red-gradient {
     @apply rounded-lg;
-    opacity: 15%;
+    opacity: 25%;
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
     background: rgb(162, 29, 29);
-    background: -moz-linear-gradient(
-      0deg,
-      rgba(162, 29, 29, 1) 5%,
-      rgba(0, 0, 0, 0) 100%
-    );
-    background: -webkit-linear-gradient(
-      0deg,
-      rgba(162, 29, 29, 1) 5%,
-      rgba(0, 0, 0, 0) 100%
-    );
     background: linear-gradient(
       0deg,
-      rgba(162, 29, 29, 1) 5%,
-      rgba(0, 0, 0, 0) 100%
+      rgba(162, 29, 29, 0.75) 5%,
+      rgba(0, 0, 0, 0) 80%
     );
-    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#a21d1d",endColorstr="#000000",GradientType=1);
   }
 </style>
