@@ -11,6 +11,14 @@ declare global {
     // interface Platform {}
   }
 
+  type Paper = {
+    batch: string | null;
+    title: string | null;
+    subject: string | null;
+    url: string | null;
+    thumbnail: string | null;
+  }
+
   type Lecture = {
     title: string | null;
     batch: string | null;
