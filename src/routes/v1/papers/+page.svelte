@@ -1,6 +1,7 @@
 <script lang="ts">
   import PaperTab from "./components/PaperTab.svelte";
   import Input from "$lib/components/ui/input/input.svelte";
+  import { Search } from "lucide-svelte";
   import Button from "$lib/components/ui/button/button.svelte";
   import { onMount } from "svelte";
   let searchBarInput: string = $state("");
@@ -48,8 +49,11 @@
 
 <div class="p-2 sm:p-8 flex flex-col gap-4">
   <div>
-    <h1 class="text-2xl sm:text-3xl text-center text-muted-foreground">
-      Past Papers
+    <h1
+      class="items-center justify-center text-2xl sm:text-3xl flex flex-row text-center text-muted-foreground"
+    >
+      <Search class="w-6 h-6 mr-2" />
+      Papers
     </h1>
     <div class="flex flex-row w-full gap-2 mt-2">
       <Input

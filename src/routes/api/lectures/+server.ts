@@ -98,7 +98,7 @@ const capitalizeFirstLetter = (str: string): string => str.charAt(0).toUpperCase
 const getOffsettedDate = (startDate: string, offset: number): string => {
   const date = new Date(startDate);
   date.setUTCHours(0, 0, 0, 0);
-  date.setDate(date.getDate() + (offset + 1)); 
+  date.setDate(date.getDate() + (offset + 1));
   return date.toISOString().split("T")[0];
 };
 

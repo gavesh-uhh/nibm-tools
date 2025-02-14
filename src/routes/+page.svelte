@@ -6,9 +6,10 @@
 
 <div class="flex-1 flex flex-col">
   <div class="flex flex-col items-center mt-10">
-    <p class="text-muted-foreground text-xs">made by Gavesh ❤️</p>
     <h1 class="text-accent-foreground text-4xl font-semibold">NIBM Tools</h1>
-    <p class="text-muted-foreground text-xs">"This might be illegal"</p>
+    <p class="text-muted-foreground text-xs">
+      "This might be illegal" | made by Gavesh ❤️
+    </p>
     <a
       href="https://www.gavesh.live"
       class="underline underline-offset-2 flex flex-col items-center gap-1 mt-2"

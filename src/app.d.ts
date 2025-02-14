@@ -11,6 +11,15 @@ declare global {
     // interface Platform {}
   }
 
+  type Exam = {
+    batch: string | null;
+    title: string | null;
+    date: string | null;
+    time: string | null;
+    url: string | null;
+    is_special: boolean | false;
+  }
+
   type Paper = {
     batch: string | null;
     title: string | null;
