@@ -3,16 +3,14 @@
 // @ts-nocheck
 import { build, files, version } from '$service-worker';
 
-// Create a unique cache name for this deployment
 const CACHE = `cache-${version}`;
 
 const ASSETS = [
-  ...build, // the app itself
-  ...files  // everything in `static`
+  ...build,
+  ...files
 ];
 
 self.addEventListener('install', (event) => {
-  // Create a new cache and add all files to it
   async function addFilesToCache() {
     const cache = await caches.open(CACHE);
     await cache.addAll(ASSETS);
@@ -22,7 +20,6 @@ self.addEventListener('install', (event) => {
 });
 
 self.addEventListener('activate', (event) => {
-  // Remove previous cached data from disk
   async function deleteOldCaches() {
     for (const key of await caches.keys()) {
       if (key !== CACHE) await caches.delete(key);
@@ -34,7 +31,7 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   if (event.request.url.startsWith('chrome-extension://')) return;
- 
+
   if (event.request.url.includes('manifest.json')) {
     return fetch(event.request);
   }
