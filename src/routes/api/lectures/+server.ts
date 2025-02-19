@@ -96,12 +96,8 @@ const cleanLocation = (text: string): string => {
 const capitalizeFirstLetter = (str: string): string => str.charAt(0).toUpperCase() + str.slice(1);
 
 const getOffsettedDate = (startDate: string, offset: number): string => {
-  const date = new Date(startDate);
-  // hotfix. bruh fix
-  date.setHours(0);
-  date.setMinutes(0);
-  date.setSeconds(0);
-  date.setUTCHours(0, 0, 0, 0);
+  const [year, month, day] = startDate.split("-").map((str) => parseInt(str));
+  const date = new Date(Date.UTC(year, month - 1, day));
   date.setDate(date.getDate() + (offset));
   return date.toISOString().split("T")[0];
 };

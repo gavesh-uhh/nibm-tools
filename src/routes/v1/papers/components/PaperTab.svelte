@@ -42,13 +42,13 @@
         class="view-button text-center p-2 w-full text-xs sm:text-sm md:text-base m-0"
         >View</a
       >
-      <a
+      <button
         onclick={handleDownload}
         class="download-button flex items-center justify-center h-full px-2 text-xs sm:text-sm md:text-base m-0"
         title="Download"
       >
         <Download class="w-4 h-4" />
-      </a>
+      </button>
     </div>
   </div>
 </div>
@@ -69,7 +69,7 @@
     border: 1px solid #333;
     border-radius: 0.35rem;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-    transition: background 300ms linear;
+    transition: --paper-view-grad 300ms linear;
     text-decoration: none;
     display: inline-flex;
     align-items: center;
@@ -96,4 +96,3 @@
     border-radius: 0.5rem;
   }
 </style>
-

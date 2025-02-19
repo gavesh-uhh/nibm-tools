@@ -123,8 +123,8 @@
       <h1
         class="text-muted-foreground text-2xl sm:text-3xl flex items-center flex-row gap-2 mb-1"
       >
-        <Search class="w-6 h-6" />
-        Search
+        <Search class="w-7 h-7" />
+        Lecture Search
       </h1>
       <div class="flex flex-row w-full gap-2 mt-2">
         <Input

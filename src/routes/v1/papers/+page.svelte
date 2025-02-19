@@ -1,4 +1,5 @@
 <script lang="ts">
+  import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
   import PaperTab from "./components/PaperTab.svelte";
   import Input from "$lib/components/ui/input/input.svelte";
   import { Search } from "lucide-svelte";
@@ -52,10 +53,10 @@
     <h1
       class="items-center justify-center text-2xl sm:text-3xl flex flex-row text-center text-muted-foreground"
     >
-      <Search class="w-6 h-6 mr-2" />
-      Papers
+      <Search class="w-7 h-7 mr-2" />
+      Paper Search
     </h1>
-    <div class="flex flex-row w-full gap-2 mt-2">
+    <div class="flex flex-row w-full gap-2 mt-4">
       <Input
         oninput={mountPapers}
         class="text-sm w-full"
@@ -64,8 +65,49 @@
       ></Input>
     </div>
     <div class="w-full flex justify-end">
-      <div class="max-w-[400px] mt-2 flex flex-row gap-2">
+      <div class="w-full sm:max-w-[400px] mt-2 flex flex-row gap-2">
         <Input placeholder="Keyword.." bind:value={keywordInput}></Input>
+        <AlertDialog.Root>
+          <AlertDialog.Trigger asChild let:builder>
+            <Button
+              size="icon"
+              class="w-[50px]"
+              variant="outline"
+              builders={[builder]}>?</Button
+            >
+          </AlertDialog.Trigger>
+          <AlertDialog.Content>
+            <AlertDialog.Header>
+              <AlertDialog.Title
+                >Downloading Multiple Papers at Once</AlertDialog.Title
+              >
+              <AlertDialog.Description>
+                You can download multiple papers at once using the Keyword
+                feature.
+                <hr class="my-4" />
+                <ul class="flex flex-col items-start justify-start text-left">
+                  <li>
+                    <strong>Enter a Search Term</strong> – Type a keyword in the
+                    search bar to find relevant subjects.
+                  </li>
+                  <li>
+                    <strong>Use the Keyword Filter</strong> – Enter a keyword in
+                    the <strong>Keyword</strong> input to filter papers by title.
+                  </li>
+                  <li>
+                    <strong>Download Papers</strong> – Click the
+                    <strong>Download All</strong> button to get all matching papers
+                    (If keyword is empty, downloads all papers in the query).
+                  </li>
+                  <li></li>
+                </ul>
+              </AlertDialog.Description>
+            </AlertDialog.Header>
+            <AlertDialog.Footer>
+              <AlertDialog.Cancel>Gotcha</AlertDialog.Cancel>
+            </AlertDialog.Footer>
+          </AlertDialog.Content>
+        </AlertDialog.Root>
         <Button onclick={downloadAllPapers}>Download All</Button>
       </div>
     </div>

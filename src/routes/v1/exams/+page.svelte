@@ -38,10 +38,10 @@
     <h1
       class="items-center justify-center text-2xl sm:text-3xl flex flex-row text-center text-muted-foreground"
     >
-      <Search class="w-6 h-6 mr-2" />
+      <Search class="w-7 h-7 mr-2" />
       Exams Crawler
     </h1>
-    <div class="flex flex-row w-full gap-2 mt-2">
+    <div class="flex flex-row w-full gap-2 mt-4">
       <Input
         class="text-sm w-full"
         bind:value={searchBarInput}
@@ -70,4 +70,3 @@
     </div>
   {/if}
 </div>
-
