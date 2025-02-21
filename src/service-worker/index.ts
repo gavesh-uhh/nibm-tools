@@ -1,4 +1,7 @@
 /// <reference types="@sveltejs/kit" />
+/// <reference no-default-lib="true"/>
+/// <reference lib="esnext" />
+/// <reference lib="webworker" />
 
 // @ts-nocheck
 import { build, files, version } from '$service-worker';
@@ -15,7 +18,6 @@ self.addEventListener('install', (event) => {
     const cache = await caches.open(CACHE);
     await cache.addAll(ASSETS);
   }
-
   event.waitUntil(addFilesToCache());
 });
 
@@ -30,6 +32,7 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
+
   if (event.request.url.startsWith('chrome-extension://')) return;
 
   if (event.request.url.includes('manifest.json')) {

@@ -6,7 +6,7 @@
   let { children } = $props();
   let firstLoad = $state(false);
 
-  onMount(() => {
+  onMount(async () => {
     if (!localStorage.getItem("first_load")) {
       localStorage.setItem("first_load", "true");
       firstLoad = true;
