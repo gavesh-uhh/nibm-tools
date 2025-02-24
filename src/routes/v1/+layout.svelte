@@ -6,10 +6,12 @@
 
 <div class="flex flex-col flex-1">
   <div class="">
-    <Button href="/" variant="outline">
-      <ArrowLeft class="w-4 h-4 mr-2" />
-      Home
-    </Button>
+    <div class="flex gap-3 w-fit items-center">
+      <Button href="/" variant="outline" size="icon" class="rounded-full">
+        <ArrowLeft class="w-4 h-4" />
+      </Button>
+      <span class="hidden sm:block">Back</span>
+    </div>
   </div>
   <div class="mt-2 flex-1">
     {@render children()}

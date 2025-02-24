@@ -119,7 +119,7 @@
 
 <div class="flex flex-col flex-1 h-full">
   <div class="flex flex-col items-center w-full">
-    <div class="px-2 py-2 flex flex-col items-center my-2 max-w-[800px] w-full">
+    <div class="flex flex-col items-center my-2 sm:max-w-[600px] mb-4 w-full">
       <h1
         class="text-muted-foreground text-2xl sm:text-3xl flex items-center flex-row gap-2 mb-1"
       >

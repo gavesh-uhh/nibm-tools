@@ -11,13 +11,11 @@
   </div>
 
   <div class="mt-5 w-full flex items-center justify-center">
-    <Alert.Root class="w-fit max-w-[600px]">
-      <Alert.Title class="text-sm">New Update!</Alert.Title>
+    <Alert.Root class="w-fit max-w-[300px]">
+      <Alert.Title class="text-sm">New Update! (Offline Support)</Alert.Title>
       <Alert.Description class="text-muted-foreground text-xs">
-        This website is now a Web App (PWA) for a better experience! Please
-        delete any old shortcuts you’ve saved and create new ones for the best
-        experience.
-        <p>(Supports both Android and IOS)</p>
+        Works offline now! (sorta). Updates on the way to Lecture Explorer to
+        parity to other menus.
       </Alert.Description>
     </Alert.Root>
   </div>
