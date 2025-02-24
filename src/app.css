@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: "Outfit";
+  src: url("./lib/fonts/Outfit.ttf");
+  font-style: normal;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;
