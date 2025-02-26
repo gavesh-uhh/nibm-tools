@@ -8,7 +8,7 @@ Built with Svelte 5, TailwindCSS, TypeScript. <br>
 `Heads up - The Code is bad, dont expect much`
 
 ## Features
-- **Lecture Viewer **- View today and 2 days worth of lectures and where they are happening
+- **Lecture Viewer** - View today and 2 days worth of lectures and where they are happening
 - **Past Paper Downloader** - Download past paper on bulk
 - **Exam Viewer** - Easily scroll through pages of Exam Dates and apply to them easily.
 - **PWA Support** - Install as an App in your Mobile Phone!
