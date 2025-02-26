@@ -4,7 +4,7 @@
 `Work in Progress` Say goodbye to the original website’s hideous, eye-searing design! Now you can effortlessly view lectures, download past papers in bulk, and apply for exams without suffering through that visual nightmare.
 
 ------------
-Built with Svelte 5, TailwindCSS, TypeScript.
+Built with Svelte 5, TailwindCSS, TypeScript. <br>
 `Heads up - The Code is bad, dont expect much`
 
 ## Features
@@ -17,7 +17,7 @@ Built with Svelte 5, TailwindCSS, TypeScript.
 `Idk why i made them endpoints but`
 
 #### Lectures
-`date` - (**Required**) The date to pull data from
+`date` - (**Required**) The date to pull data from <br>
 `limit` - Number of days to fetch starting from the given date (default is 3)
 ```markdown
 "/api/lectures?date=2025-10-05"
