@@ -10,16 +10,6 @@
     <p class="text-muted-foreground text-sm">Made by Gavesh ❤️</p>
   </div>
 
-  <div class="mt-5 w-full flex items-center justify-center">
-    <Alert.Root class="w-fit max-w-[300px]">
-      <Alert.Title class="text-sm">New Update! (Offline Support)</Alert.Title>
-      <Alert.Description class="text-muted-foreground text-xs">
-        Works offline now! (sorta). Updates on the way to Lecture Explorer to
-        parity to other menus.
-      </Alert.Description>
-    </Alert.Root>
-  </div>
-
   <div
     class="flex flex-col sm:flex-row flex-wrap gap-2 justify-center items-center mt-2"
   >
@@ -64,6 +54,15 @@
   </div>
 
   <div class="w-full flex items-center justify-center mt-1">
+    <a
+      href="https://www.github.com/gavesh-uhh/nibm-tools"
+      class="underline underline-offset-2 flex flex-row items-center gap-1 mt-2"
+    >
+      <Link class="w-4 h-4" />
+      View Code
+    </a>
+  </div>
+  <div class="w-full flex items-center justify-center mt-2">
     <a
       href="https://www.gavesh.live"
       class="underline underline-offset-2 flex flex-row items-center gap-1 mt-2"

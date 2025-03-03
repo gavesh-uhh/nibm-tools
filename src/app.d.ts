@@ -5,7 +5,9 @@ declare global {
 
   namespace App {
     // interface Error {}
-    // interface Locals {}
+    interface Locals {
+      version: string | "0.1.0";
+    }
     // interface PageData {}
     // interface PageState {}
     // interface Platform {}
