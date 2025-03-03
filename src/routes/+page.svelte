@@ -5,7 +5,7 @@
 </script>
 
 <div class="flex-1 flex flex-col">
-  <div class="flex flex-col items-center mt-6">
+  <div class="flex flex-col items-center mt-6 mb-3">
     <h1 class="text-accent-foreground text-4xl font-semibold">NIBM Tools</h1>
     <p class="text-muted-foreground text-sm">Made by Gavesh ❤️</p>
   </div>
@@ -53,7 +53,7 @@
     </div>
   </div>
 
-  <div class="w-full flex items-center justify-center mt-1">
+  <div class="w-full flex items-center justify-center mt-3">
     <a
       href="https://www.github.com/gavesh-uhh/nibm-tools"
       class="underline underline-offset-2 flex flex-row items-center gap-1 mt-2"
@@ -62,7 +62,7 @@
       View Code
     </a>
   </div>
-  <div class="w-full flex items-center justify-center mt-2">
+  <div class="w-full flex items-center justify-center mt-1">
     <a
       href="https://www.gavesh.live"
       class="underline underline-offset-2 flex flex-row items-center gap-1 mt-2"
