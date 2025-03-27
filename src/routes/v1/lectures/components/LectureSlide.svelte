@@ -11,8 +11,20 @@
   let currentDateTime: Date | undefined;
   let is_going_on: boolean = $state(false);
   let progress: number = $state(0);
+  let nearest_exam: Exam | null = $state(null);
 
-  onMount(() => {
+  const findNearestExam = async () => {
+    const response = await fetch("/api/exams?examName=" + lecture.title);
+    const data = await response.json();
+    const exams: Exam[] = data;
+    exams.forEach((x) => {
+      if (x.batch != lecture.batch) return;
+      nearest_exam = x;
+    });
+  };
+
+  onMount(async () => {
+    findNearestExam();
     updateTime();
     setInterval(() => {
       updateTime();
@@ -81,7 +93,7 @@
     <div class="red-gradient"></div>
   {/if}
   <div class="flex items-center w-full justify-between z-20">
-    <h1 class="text-muted-foreground text-xs opacity-85 text-right">
+    <h1 class="text-muted-foreground text-xs opacity-85 text-left flex gap-1">
       {#if lecture.properties.branch === "SOC"}
         <span class="text-blue-500">SOC | </span>
       {:else if lecture.properties.branch == "NIC"}
@@ -89,7 +101,14 @@
       {:else}
         <span class="text-green-500">SOB | </span>
       {/if}
-      {trimToLength(lecture.batch as string, 15)}
+
+      {#if lecture.batch}
+        <div class="flex flex-row gap-1">
+          {#each lecture.batch as item}
+            <p>{trimToLength((item + "") as string, 15)}</p>
+          {/each}
+        </div>
+      {/if}
     </h1>
   </div>
   <div class="flex items-center w-full justify-between">
@@ -131,6 +150,14 @@
           {/if}
         </h1>
       </div>
+    </div>
+  {/if}
+  {#if nearest_exam}
+    <hr class="mt-2" />
+    <div class="flex mt-3 items-center w-full justify-between">
+      <h1 class="text-xs text-muted-foreground text-right">
+        Upcoming Exam @ {nearest_exam.date}
+      </h1>
     </div>
   {/if}
 </div>

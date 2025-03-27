@@ -6,6 +6,7 @@
   import Input from "$lib/components/ui/input/input.svelte";
   import Button from "$lib/components/ui/button/button.svelte";
   import { onMount } from "svelte";
+  import ExamTab from "../exams/components/ExamTab.svelte";
 
   const toggleBranch = () => {
     const branches = ["SOC", "NIC", "SOB", "ALL"];
@@ -42,31 +43,27 @@
   };
 
   const validateSearchQuery = (lecture: Lecture) => {
-    if (searchBarInput === "") return true;
     if (!lecture) return false;
-    if (lecture.title?.toLowerCase().startsWith(searchBarInput.toLowerCase()))
-      return true;
+    if (searchBarInput === "") return true;
+
+    const input = searchBarInput.toLowerCase();
+
+    if (lecture.title?.toLowerCase().startsWith(input)) return true;
+    if (lecture.lecturer?.toLowerCase().startsWith(input)) return true;
+    if (lecture.location.floor?.toLowerCase().startsWith(input)) return true;
     if (
-      lecture.lecturer?.toLowerCase().startsWith(searchBarInput.toLowerCase())
+      lecture.location.hall?.toLowerCase().startsWith(input) &&
+      lecture.properties.branch === currentBranch
     )
       return true;
-    if (
-      lecture.location.floor
-        ?.toLowerCase()
-        .startsWith(searchBarInput.toLowerCase())
-    )
-      return true;
-    if (
-      lecture.location.hall
-        ?.toLowerCase()
-        .startsWith(searchBarInput.toLowerCase())
-    )
-      if (lecture.properties.branch === currentBranch) return true;
-    if (lecture.batch?.toLowerCase().startsWith(searchBarInput.toLowerCase()))
-      return true;
+
+    return (
+      lecture.batch?.some((batch) => batch.toLowerCase().startsWith(input)) ||
+      false
+    );
   };
 
-  onMount(async () => {
+  const loadLectures = async () => {
     loaded = false;
     currentDate = new Date();
     const dayString =
@@ -80,9 +77,11 @@
     data.forEach((item: Lecture) => {
       lectures = [...lectures, item];
     });
-    setTimeout(() => {
-      loaded = true;
-    }, 1000);
+    loaded = true;
+  };
+
+  onMount(async () => {
+    await loadLectures();
   });
 </script>
 
@@ -119,7 +118,7 @@
 
 <div class="flex flex-col flex-1 h-full">
   <div class="flex flex-col items-center w-full">
-    <div class="flex flex-col items-center my-2 sm:max-w-[600px] mb-4 w-full">
+    <div class="flex flex-col items-center my-2 sm:max-w-[600px] mb-10 w-full">
       <h1
         class="text-muted-foreground text-2xl sm:text-3xl flex items-center flex-row gap-2 mb-1"
       >

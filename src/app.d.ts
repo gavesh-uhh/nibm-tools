@@ -32,7 +32,7 @@ declare global {
 
   type Lecture = {
     title: string | null;
-    batch: string | null;
+    batch: string[] | null;
     lecturer: string | null;
     location: {
       hall: string | null;

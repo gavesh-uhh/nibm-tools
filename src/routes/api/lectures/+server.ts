@@ -37,8 +37,7 @@ const fetchData = async (url: string, branch: string, offset: number): Promise<L
       .map((_, row) => {
         const tds = $(row).find("td");
         if (tds.length < 3) return null;
-
-        const batch = $(tds[0]).text().trim().replace("/CO", "");
+        const batches = $(tds[0]).find("div > big > b").toArray().map((div) => $(div).text().trim().replaceAll("/CO", "").trim()).filter(x => x !== "");
         const location_Hall = $(tds[1])
           .find("big")
           .toArray()
@@ -55,7 +54,7 @@ const fetchData = async (url: string, branch: string, offset: number): Promise<L
 
         return {
           title: $(tds[2]).contents().last().text().trim(),
-          batch: batch.trim() === "REPEATERS" ? "Repeating Exam" : batch.trim(),
+          batch: batches,
           lecturer: lecturer.trim() === "EXAM" ? "None" : lecturer.trim(),
           offset,
           location: {

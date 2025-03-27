@@ -6,12 +6,17 @@ const URL = "https://www.nibmworldwide.com/exams";
 
 export const GET = async ({ url }: { url: URL }): Promise<Response> => {
   const limit = parseInt(url.searchParams.get("limit") || "999");
+  const examName = url.searchParams.get("examName")?.trim() || "";
   const exams = await parseExams();
-  return json(exams.slice(0, limit));
+
+  const filteredExams = examName
+    ? exams.filter(exam => exam.title?.toLowerCase() === examName.toLowerCase())
+    : exams;
+
+  return json(filteredExams.slice(0, limit));
 };
 
 const parseExams = async (): Promise<Exam[]> => {
-
   const { data } = await axios.get(URL);
   const $ = cheerio.load(data);
 
@@ -26,7 +31,6 @@ const parseExams = async (): Promise<Exam[]> => {
   const exams: Exam[] = [];
 
   for (const row of examRows) {
-
     const tds = $(row).find("td").toArray();
     if (tds.length < 3) continue;
 
