@@ -2,26 +2,30 @@
   import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
   import PaperTab from "./components/PaperTab.svelte";
   import Input from "$lib/components/ui/input/input.svelte";
-  import { Search } from "lucide-svelte";
+  import { Search, Loader2 } from "lucide-svelte";
   import Button from "$lib/components/ui/button/button.svelte";
   import { onMount } from "svelte";
   let searchBarInput: string = $state("");
   let keywordInput: string = $state("");
+  let is_loading: boolean = $state(false);
 
   let papers: Paper[] = $state([]);
 
-  onMount(async () => {
-    const res = await fetch("/api/papers?q=Paper");
-    const data = await res.json();
-    papers = data;
-  });
-
   const mountPapers = async () => {
-    if (searchBarInput === "") return;
-    const res = await fetch("/api/papers?q=" + searchBarInput);
-    const data = await res.json();
-    papers = data;
+    is_loading = true;
+    try {
+      const res = await fetch("/api/papers?q=" + (searchBarInput || "Paper"));
+      const data = await res.json();
+      papers = data;
+    } catch (error) {
+      is_loading = false;
+    }
+    is_loading = false;
   };
+
+  onMount(async () => {
+    mountPapers();
+  });
 
   const downloadAllPapers = async () => {
     papers.forEach(async (paper) => {
@@ -112,11 +116,20 @@
       </div>
     </div>
   </div>
-  <div class="grid gap-8 w-full">
-    {#each papers as item}
-      <PaperTab paper={item} />
-    {/each}
-  </div>
+  {#if is_loading}
+    <div class="h-full flex items-center justify-center p-8 opacity-75">
+      <div class="flex flex-row gap-2 items-center">
+        <Loader2 class="w-5 h-5 animate-spin" />
+        <h1 class="">Loading Papers ...</h1>
+      </div>
+    </div>
+  {:else}
+    <div class="grid gap-8 w-full">
+      {#each papers as item}
+        <PaperTab paper={item} />
+      {/each}
+    </div>
+  {/if}
 </div>
 
 <style>

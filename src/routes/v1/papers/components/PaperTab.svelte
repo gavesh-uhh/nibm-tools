@@ -25,6 +25,7 @@
     <div class="flex flex-col gap-2">
       <div class="flex items-center w-full">
         <img
+          loading="eager"
           src={paper.thumbnail}
           class="rounded-sm w-full h-48 sm:h-64 object-cover object-top opacity-75 hover:opacity-100 transition duration-200"
           alt=""
