@@ -137,6 +137,14 @@
       {lecture.time.start} - {lecture.time.end}
     </h1>
   </div>
+  {#if nearest_exam}
+    <hr class="mt-2" />
+    <div class="flex mt-3 items-center w-full justify-between">
+      <h1 class="text-xs text-muted-foreground text-right">
+        Upcoming Exam @ {nearest_exam.date}
+      </h1>
+    </div>
+  {/if}
   {#if is_going_on && lecture.offset == 0}
     <hr class="mt-2" />
     <div class="flex mt-3 items-center w-full justify-between">
@@ -150,14 +158,6 @@
           {/if}
         </h1>
       </div>
-    </div>
-  {/if}
-  {#if nearest_exam}
-    <hr class="mt-2" />
-    <div class="flex mt-3 items-center w-full justify-between">
-      <h1 class="text-xs text-muted-foreground text-right">
-        Upcoming Exam @ {nearest_exam.date}
-      </h1>
     </div>
   {/if}
 </div>
