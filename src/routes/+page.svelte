@@ -37,6 +37,11 @@
       NIBM Tools
     </h1>
     <p class="text-muted-foreground text-sm">Made by Gavesh ❤️</p>
+    <Button
+      href="https://www.buymeacoffee.com/gaveshsaparamadu"
+      class="mt-2 bg-yellow-300 hover:bg-yellow-500 rounded-3xl"
+      >🍻 Consider Donating</Button
+    >
   </div>
 
   <div

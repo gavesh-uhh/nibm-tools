@@ -138,15 +138,17 @@
     </h1>
   </div>
   {#if nearest_exam}
-    <hr class="mt-2" />
-    <div class="flex mt-3 items-center w-full justify-between">
-      <h1 class="text-xs text-muted-foreground text-right">
-        Upcoming Exam @ {nearest_exam.date}
-      </h1>
+    <div>
+      <hr class="my-2" />
+      <div class="flex mt-3 items-center w-full justify-between">
+        <h1 class="text-xs text-muted-foreground text-right">
+          📝 Closest Exam Found @ {nearest_exam.date}
+        </h1>
+      </div>
     </div>
   {/if}
   {#if is_going_on && lecture.offset == 0}
-    <hr class="mt-2" />
+    <hr class="mt-3" />
     <div class="flex mt-3 items-center w-full justify-between">
       <div class="opacity-80 w-full items-center flex flex-row gap-2">
         <Progress value={progress} max={100} class="flex-1" />
