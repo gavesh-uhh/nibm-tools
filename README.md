@@ -1,7 +1,8 @@
 # nibm-tools
 **Current Live Version :- [Click Here](http://nibm.gavesh.live)**
 
-`Work in Progress` Say goodbye to the original website’s hideous, eye-searing design! Now you can effortlessly view lectures, download past papers in bulk, and apply for exams without suffering through that visual nightmare.
+`Work in Progress` <br/>
+Say goodbye to the original website’s hideous, eye-searing design! Now you can effortlessly view lectures, download past papers in bulk, and apply for exams without suffering through that visual nightmare.
 
 ------------
 Built with Svelte 5, TailwindCSS, TypeScript. <br>
