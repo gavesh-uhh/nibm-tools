@@ -10,6 +10,7 @@
   let is_loading: boolean = $state(false);
 
   let papers: Paper[] = $state([]);
+  let is_processing: boolean = $state(false);
 
   const mountPapers = async () => {
     is_loading = true;
@@ -28,27 +29,40 @@
   });
 
   const downloadAllPapers = async () => {
-    papers.forEach(async (paper) => {
-      try {
-        if (
-          keywordInput &&
-          !paper.subject?.toLowerCase().includes(keywordInput.toLowerCase())
-        ) {
-          return;
-        }
-        if (!paper.url) return;
-        const response = await fetch(paper.url);
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = paper.subject + " " + paper.batch + ".pdf";
-        link.click();
-        window.URL.revokeObjectURL(url);
-      } catch (error) {
-        console.error("Error downloading the file:", error);
-      }
-    });
+    is_processing = true;
+    try {
+      const downloadPromises = papers
+        .filter((paper) => {
+          if (
+            keywordInput &&
+            !paper.subject?.toLowerCase().includes(keywordInput.toLowerCase())
+          ) {
+            return false;
+          }
+          return paper.url ? true : false;
+        })
+        .map(async (paper) => {
+          try {
+            if (paper.url == null) return;
+            const response = await fetch(paper.url);
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = (paper.batch + " " + paper.subject + ".pdf").trim();
+            link.click();
+            window.URL.revokeObjectURL(url);
+          } catch (error) {
+            console.error(`Error downloading paper "${paper.subject}":`, error);
+          }
+        });
+
+      await Promise.all(downloadPromises);
+    } catch (error) {
+      console.error("Error in download process:", error);
+    } finally {
+      is_processing = false;
+    }
   };
 </script>
 
@@ -112,7 +126,13 @@
             </AlertDialog.Footer>
           </AlertDialog.Content>
         </AlertDialog.Root>
-        <Button onclick={downloadAllPapers}>Download All</Button>
+        <Button disabled={is_processing} onclick={downloadAllPapers}>
+          {#if is_processing}
+            <Loader2 class="w-5 h-5 mr-2 animate-spin" /> Processing
+          {:else}
+            Download All
+          {/if}
+        </Button>
       </div>
     </div>
   </div>
