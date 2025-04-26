@@ -2,6 +2,7 @@
   import { Pointer, Link, Star } from "lucide-svelte";
   import Button from "$lib/components/ui/button/button.svelte";
   import { onMount } from "svelte";
+  import type { PageData } from "./$types";
 
   interface Module {
     id: string;
