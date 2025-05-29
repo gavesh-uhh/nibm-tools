@@ -12,18 +12,19 @@
   <AlertDialog.Root open={true}>
     <AlertDialog.Content class="max-w-md">
       <AlertDialog.Header>
-        <AlertDialog.Title class="text-lg font-bold"
-          >Service Discontinuation Notice</AlertDialog.Title
-        >
+        <AlertDialog.Title class="text-lg font-bold relative">
+          🚀 We're Moving to a New Domain!
+        </AlertDialog.Title>
         <AlertDialog.Description class="mt-2">
-          Due to insufficient funding for domain and hosting costs, this service
-          (including API interfaces) will be discontinued after May 30th 2025.
+          We're migrating to a new URL. You’ll be redirected soon, but it’s not guaranteed — keep an eye out! <br>
+          Make sure to bookmark it or add it to your home screen for easy access.
         </AlertDialog.Description>
       </AlertDialog.Header>
       <AlertDialog.Footer class="mt-4">
-        <AlertDialog.Action>Alright</AlertDialog.Action>
+        <AlertDialog.Action>Got it! 👍</AlertDialog.Action>
       </AlertDialog.Footer>
     </AlertDialog.Content>
   </AlertDialog.Root>
   {@render children()}
 </div>
+
