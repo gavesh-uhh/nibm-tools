@@ -191,7 +191,12 @@
         <Button
           size="icon"
           variant="destructive"
-          onclick={() => (searchBarInput = "")}
+          onclick={() => {
+            searchBarInput = "";
+            filterTime = "";
+            filterLocation = "";
+            filterLecturer = "";
+          }}
         >
           <X class="w-3 h-3" />
         </Button>
