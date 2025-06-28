@@ -1,6 +1,16 @@
 {
+    "name": "NIBM Tools",
+    "short_name": "NIBM",
+    "description": "NIBM Tools - Lecture schedules, papers, and more",
+    "start_url": "/",
+    "scope": "/",
+    "display": "standalone",
+    "orientation": "any",
     "theme_color": "#000000",
     "background_color": "#000000",
+    "lang": "en-US",
+    "dir": "auto",
+    "categories": ["education", "productivity"],
     "icons": [
         {
             "purpose": "maskable",
@@ -14,12 +24,5 @@
             "src": "icon512_rounded.png",
             "type": "image/png"
         }
-    ],
-    "orientation": "any",
-    "display": "standalone",
-    "dir": "auto",
-    "lang": "en-US",
-    "name": "NIBM Tools",
-    "short_name": "NIBM",
-    "start_url": "/"
+    ]
 }

@@ -10,4 +10,3 @@
 <div class="p-4 flex flex-col min-h-screen">
   {@render children()}
 </div>
-

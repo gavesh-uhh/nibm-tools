@@ -297,7 +297,7 @@
       </div>
     {:else}
       <div class="flex flex-col gap-2">
-        {#each lectures as item (item.title + '-' + item.time?.start + '-' + item.location?.hall + '-' + item.offset + '-' + item.batch?.join('-'))}
+        {#each lectures as item, i (item.title + '-' + item.time?.start + '-' + item.location?.hall + '-' + item.offset + '-' + item.batch?.join('-') + '-' + i)}
           {#if item.properties.branch === currentBranch || currentBranch === "ALL"}
             {#if !isOver(item) && validateSearchQuery(item) && item.offset == currentOffset}
               <div id="lecture-{item.title}">

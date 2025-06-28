@@ -42,40 +42,47 @@
 </script>
 
 <div
-  class="ring-1 flex flex-col items-center relative p-4 rounded-lg ring-muted bg-muted/25"
+  class="flex flex-col space-y-3 rounded-lg border bg-card p-4 text-card-foreground transition-all hover:shadow-md"
 >
-  <div class="flex flex-row items-center w-full gap-2">
-    <div class="flex flex-col gap-1 flex-1">
-      <div>
-        <h1 class="text-xs text-muted-foreground">{exam.batch}</h1>
-      </div>
-      <div>
-        <h1 class="text-1xl">{exam.title}</h1>
-      </div>
-      <div>
-        <p class="text-xs text-muted-foreground">{exam.date} @ {exam.time}</p>
-      </div>
-      {#if daysLeft <= 7}
-        <div>
-          <p class="text-xs text-red-400/50">
-            NOTICE: {remainingDayString} remaining
-          </p>
-        </div>
-      {/if}
+  <div class="flex items-start justify-between">
+    <div class="flex-1">
+      <p class="text-sm text-muted-foreground">{exam.batch}</p>
+      <h2 class="text-lg font-semibold leading-tight">{exam.title}</h2>
     </div>
-    <div>
-      <Button class="flex items-center" href={exam.url}>
-        <Pointer class="w-4 h-4 mr-2" />
-        Apply</Button
-      >
-    </div>
+    {#if exam.is_special}
+      <div class="ml-4 flex-shrink-0">
+        <span
+          class="inline-flex items-center rounded-full bg-yellow-400/10 px-2 py-1 text-xs font-medium text-yellow-500 ring-1 ring-inset ring-yellow-400/20"
+        >
+          Special Exam
+        </span>
+      </div>
+    {/if}
   </div>
-  {#if exam.is_special}
-    <div class="w-full">
-      <hr class="my-3" />
-      <h1 class="text-xs text-yellow-300 flex flex-row items-center">
-        ⚠️ Special Exam
-      </h1>
-    </div>
-  {/if}
+
+  <div class="flex items-center justify-between text-sm text-muted-foreground">
+    <span>{exam.date} @ {exam.time}</span>
+    {#if daysLeft >= 0 && daysLeft <= 7}
+      <span
+        class="font-semibold"
+        class:text-red-500={daysLeft <= 2}
+        class:text-yellow-500={daysLeft > 2}
+      >
+        {remainingDayString} left
+      </span>
+    {:else if daysLeft < 0}
+      <span class="font-semibold text-red-600">Expired</span>
+    {/if}
+  </div>
+
+  <div class="flex items-center justify-end pt-2">
+    <Button href={exam.url} size="sm" variant={daysLeft < 0 ? 'secondary' : 'default'}>
+      <Pointer class="mr-2 h-4 w-4" />
+      {#if daysLeft < 0}
+        View Details
+      {:else}
+        Apply Now
+      {/if}
+    </Button>
+  </div>
 </div>
