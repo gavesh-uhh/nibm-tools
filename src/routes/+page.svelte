@@ -214,17 +214,17 @@
         <div>
           <hr class="my-4" />
           <div
-            class="flex flex-col sm:flex-row gap-3 sm:justify-between sm:items-center"
+            class="flex flex-wrap sm:flex-row gap-3 sm:justify-between items-center"
           >
             {#if module.hidden}
-              <Button disabled class="w-full sm:w-auto">
+              <Button disabled class="w-fit sm:w-auto">
                 <ExternalLink class="w-4 h-4 mr-2" />
                 Coming Soon
               </Button>
             {:else}
               <Button
                 href={module.linkUrl}
-                class="w-full sm:w-auto"
+                class="w-fit  sm:w-auto"
                 onmouseenter={() => {
                   if (module.id === "lectures") {
                     fetch("/v1/lectures").catch(() => {});
