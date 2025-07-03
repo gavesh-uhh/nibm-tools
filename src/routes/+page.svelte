@@ -1,10 +1,7 @@
 <script lang="ts">
-  import { Link, Star, ExternalLink, Loader2 } from "lucide-svelte";
+  import { Link, Star, ExternalLink, Github, Settings } from "lucide-svelte";
   import Button from "$lib/components/ui/button/button.svelte";
   import { onMount } from "svelte";
-  import { goto } from "$app/navigation";
-  import type { PageData } from "./$types";
-    import { getRandomQuote } from "$lib/nibm";
 
   interface Module {
     id: string;
@@ -71,7 +68,6 @@
 
   let starredModules: string[] = $state([]);
   let showInstallGuide = $state(false);
-  let showContent = $state(false);
 
   onMount(() => {
     const saved = localStorage.getItem("starred-modules");
@@ -89,9 +85,6 @@
     };
 
     setTimeout(preloadLectures, 1000);
-    setTimeout(() => {
-      showContent = true;
-    }, 1000);
   });
 
   function togglePin(moduleId: string) {
@@ -144,24 +137,7 @@
   );
 </script>
 
-{#if !showContent}
-  <div
-    class="fixed inset-0 bg-background z-50 flex items-center flex-col justify-center"
-  >
-    <div class="flex flex-col items-center gap-5">
-      <div class="animation-spin opacity-50">
-        <Loader2 class="animation-spin w-10 h-10" />
-      </div>
-      <h1 class="text-sm w-[300px] text-foreground opacity-50 text-center">{getRandomQuote()}</h1>
-    </div>
-  </div>
-{/if}
-
-<div
-  class="flex-1 flex flex-col"
-  class:opacity-0={!showContent}
-  class:animate-fade-in={showContent}
->
+<div class="flex-1 flex flex-col">
   <div class="flex flex-col items-center py-8 text-center md:py-12">
     <h1 class="font-bold tracking-tight text-5xl">NIBM Toolkit</h1>
     <div class="mt-6 flex flex-col justify-center gap-4">
@@ -222,15 +198,7 @@
                 Coming Soon
               </Button>
             {:else}
-              <Button
-                href={module.linkUrl}
-                class="w-fit  sm:w-auto"
-                onmouseenter={() => {
-                  if (module.id === "lectures") {
-                    fetch("/v1/lectures").catch(() => {});
-                  }
-                }}
-              >
+              <Button href={module.linkUrl} class="w-fit  sm:w-auto">
                 <ExternalLink class="w-4 h-4 mr-2" />
                 {module.linkTitle ?? "Open"}
               </Button>
@@ -263,21 +231,7 @@
         class="text-muted-foreground transition-colors hover:text-foreground"
         aria-label="View source code on GitHub"
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="h-6 w-6"
-          ><path
-            d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35.0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35.0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"
-          /><path d="M9 18c-4.51 2-5-2-7-2" /></svg
-        >
+        <Github class="h-6 w-6" />
       </a>
       <a
         href="https://www.gavesh.live"
@@ -287,6 +241,14 @@
         aria-label="Visit Gavesh's personal website"
       >
         <Link class="h-6 w-6" />
+      </a>
+      <a
+        href="/v1/settings"
+        rel="noopener noreferrer"
+        class="text-muted-foreground transition-colors hover:text-foreground"
+        aria-label="Set your personal details"
+      >
+        <Settings class="h-6 w-6" />
       </a>
     </div>
   </footer>
@@ -324,45 +286,3 @@
     </div>
   </div>
 {/if}
-
-<style>
-
-  .animation-spin {
-    animation: spin 1s linear infinite;
-  }
-
-  @keyframes spin {
-    from {
-      transform: rotate(0deg);
-    }
-    to {
-      transform: rotate(360deg);
-    }
-  }
-
-  @keyframes text-appear {
-    0% {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    100% {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  @keyframes fade-in {
-    from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  .animate-fade-in {
-    animation: fade-in 0.6s ease-out forwards;
-  }
-</style>

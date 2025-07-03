@@ -14,13 +14,30 @@
   let nearest_exam: Exam | null = $state(null);
 
   const findNearestExam = async () => {
-    const response = await fetch("/api/exams?examName=" + lecture.title);
+    if (lecture.title == undefined) return;
+    const searchCode =
+      lecture.batch + (await getSuffixCode(lecture.properties.branch));
+    console.log("Searching for exams with code:", searchCode);
+    const response = await fetch("/api/exams?examName=" + lecture.title.trim());
     const data = await response.json();
     const exams: Exam[] = data;
     exams.forEach((x) => {
-      if (x.batch != lecture.batch) return;
+      if (x.batch != searchCode) return;
       nearest_exam = x;
     });
+  };
+
+  const getSuffixCode = async (branchCode: string): Promise<string> => {
+    switch (branchCode) {
+      case "SOC":
+        return "/CO";
+      case "NIC":
+        return "/KU";
+      case "SOB":
+        return "/RJ";
+      default:
+        return "";
+    }
   };
 
   onMount(async () => {
@@ -144,6 +161,10 @@
         <h1 class="text-xs text-muted-foreground text-right">
           📝 Closest Exam Found @ {nearest_exam.date}
         </h1>
+        <a
+          class="text-xs bg-white px-4 py-1 text-black rounded-lg"
+          href={nearest_exam.url}>Apply</a
+        >
       </div>
     </div>
   {/if}

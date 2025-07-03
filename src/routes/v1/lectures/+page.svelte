@@ -2,7 +2,17 @@
   import { getDay, getRandomQuote } from "$lib/nibm";
 
   import LectureSlide from "./components/LectureSlide.svelte";
-  import { Search, X, Loader2, Calendar, Clock, MapPin, User, Filter, ArrowRight } from "lucide-svelte";
+  import {
+    Search,
+    X,
+    Loader2,
+    Calendar,
+    Clock,
+    MapPin,
+    User,
+    Filter,
+    ArrowRight,
+  } from "lucide-svelte";
   import Input from "$lib/components/ui/input/input.svelte";
   import Button from "$lib/components/ui/button/button.svelte";
   import { onMount } from "svelte";
@@ -59,11 +69,15 @@
     const response = await fetch("/api/lectures?date=" + dayString);
     const data = await response.json();
     lectures = data;
-    
+
     // Extract unique lecturers and floors
-    lecturers = [...new Set(data.map((l: Lecture) => l.lecturer).filter(Boolean))].sort() as string[];
-    floors = [...new Set(data.map((l: Lecture) => l.location?.hall).filter(Boolean))].sort() as string[];
-    
+    lecturers = [
+      ...new Set(data.map((l: Lecture) => l.lecturer).filter(Boolean)),
+    ].sort() as string[];
+    floors = [
+      ...new Set(data.map((l: Lecture) => l.location?.hall).filter(Boolean)),
+    ].sort() as string[];
+
     loaded = true;
   };
 
@@ -73,18 +87,34 @@
 
   const validateSearchQuery = (lecture: Lecture) => {
     if (!lecture) return false;
-    if (searchBarInput === "" && !filterTime && !filterLocation && !filterLecturer) return true;
+    if (
+      searchBarInput === "" &&
+      !filterTime &&
+      !filterLocation &&
+      !filterLecturer
+    )
+      return true;
 
     const input = searchBarInput.toLowerCase();
-    const timeMatch = !filterTime || (lecture.time?.start && lecture.time.start.startsWith(filterTime));
-    const locationMatch = !filterLocation || (lecture.location?.hall && lecture.location.hall.toLowerCase().includes(filterLocation.toLowerCase()));
-    const lecturerMatch = !filterLecturer || lecture.lecturer?.toLowerCase().includes(filterLecturer.toLowerCase());
+    const timeMatch =
+      !filterTime ||
+      (lecture.time?.start && lecture.time.start.startsWith(filterTime));
+    const locationMatch =
+      !filterLocation ||
+      (lecture.location?.hall &&
+        lecture.location.hall
+          .toLowerCase()
+          .includes(filterLocation.toLowerCase()));
+    const lecturerMatch =
+      !filterLecturer ||
+      lecture.lecturer?.toLowerCase().includes(filterLecturer.toLowerCase());
 
-    const basicMatch = 
+    const basicMatch =
       lecture.title?.toLowerCase().startsWith(input) ||
       lecture.lecturer?.toLowerCase().startsWith(input) ||
       lecture.location.floor?.toLowerCase().startsWith(input) ||
-      (lecture.location.hall?.toLowerCase().startsWith(input) && lecture.properties.branch === currentBranch) ||
+      (lecture.location.hall?.toLowerCase().startsWith(input) &&
+        lecture.properties.branch === currentBranch) ||
       lecture.batch?.some((batch) => batch.toLowerCase().startsWith(input));
 
     return basicMatch && timeMatch && locationMatch && lecturerMatch;
@@ -94,42 +124,46 @@
     const now = new Date();
     const currentHour = now.getHours();
     const currentMinute = now.getMinutes();
-    
-    const currentLecture = lectures.find(lecture => {
+
+    const currentLecture = lectures.find((lecture) => {
       if (lecture.offset !== 0) return false;
       if (!lecture.time?.start || !lecture.time?.end) return false;
-      const [startHour, startMinute] = lecture.time.start.split(':').map(Number);
-      const [endHour, endMinute] = lecture.time.end.split(':').map(Number);
-      
+      const [startHour, startMinute] = lecture.time.start
+        .split(":")
+        .map(Number);
+      const [endHour, endMinute] = lecture.time.end.split(":").map(Number);
+
       const lectureStart = startHour * 60 + startMinute;
       const lectureEnd = endHour * 60 + endMinute;
       const currentTime = currentHour * 60 + currentMinute;
-      
+
       return currentTime >= lectureStart && currentTime <= lectureEnd;
     });
 
     if (currentLecture) {
-      const element = document.getElementById(`lecture-${currentLecture.title}`);
-      element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      const element = document.getElementById(
+        `lecture-${currentLecture.title}`,
+      );
+      element?.scrollIntoView({ behavior: "smooth", block: "center" });
     }
   }
 
   function handleKeydown(event: KeyboardEvent) {
     if (event.ctrlKey || event.metaKey) {
-      switch(event.key) {
-        case 'f':
+      switch (event.key) {
+        case "f":
           event.preventDefault();
-          document.querySelector('input')?.focus();
+          document.querySelector("input")?.focus();
           break;
-        case 'j':
+        case "j":
           event.preventDefault();
           jumpToCurrentTime();
           break;
-        case '[':
+        case "[":
           event.preventDefault();
           if (currentOffset > 0) currentOffset--;
           break;
-        case ']':
+        case "]":
           event.preventDefault();
           if (currentOffset < 2) currentOffset++;
           break;
@@ -138,188 +172,188 @@
   }
 
   onMount(() => {
-    window.addEventListener('keydown', handleKeydown);
-    return () => window.removeEventListener('keydown', handleKeydown);
+    window.addEventListener("keydown", handleKeydown);
+    return () => window.removeEventListener("keydown", handleKeydown);
   });
 </script>
 
-<div
-  class="fixed bottom-10 p-4 z-20 left-0 w-full flex items-center justify-center"
->
-  <div
-    class="flex flex-row items-center justify-center gap-1 sm:gap-2 w-fit p-2 bg-black/80 rounded-3xl"
-  >
-    <button
-      class="offset"
-      aria-current={currentOffset == 0 ? "true" : null}
-      onclick={() => currentOffset = 0}
-    >
-      Today
-    </button>
-    <button
-      class="offset"
-      aria-current={currentOffset == 1 ? "true" : null}
-      onclick={() => currentOffset = 1}
-    >
-      Tomorrow
-    </button>
-    <button
-      class="offset"
-      aria-current={currentOffset == 2 ? "true" : null}
-      onclick={() => currentOffset = 2}
-    >
-      Next {getDay(currentDate, 2)}
-    </button>
-  </div>
-</div>
-
-<div class="flex flex-col flex-1 h-full">
-  <div class="flex flex-col items-center w-full">
-    <div class="flex flex-col items-center my-2 sm:max-w-[600px] mb-10 w-full">
-      <h1
-        class="text-muted-foreground text-2xl sm:text-3xl flex items-center flex-row gap-2 mb-1"
+<div class="min-h-screen flex flex-col">
+  <div class="flex-1 pb-28">
+    <div class="flex flex-col items-center w-full">
+      <div
+        class="flex flex-col items-center my-2 sm:max-w-[600px] mb-10 w-full"
       >
-        <Search class="w-7 h-7" />
-        Lecture Search
-      </h1>
-      <div class="flex flex-row w-full gap-2 mt-2">
-        <Input
-          class="text-sm w-full"
-          bind:value={searchBarInput}
-          placeholder="DSE242.2F, Harison Hall, etc."
-        ></Input>
-        <Button
-          size="icon"
-          variant="destructive"
-          onclick={() => {
-            searchBarInput = "";
-            filterTime = "";
-            filterLocation = "";
-            filterLecturer = "";
-          }}
+        <h1
+          class="text-muted-foreground text-2xl sm:text-3xl flex items-center flex-row gap-2 mb-1"
         >
-          <X class="w-3 h-3" />
-        </Button>
-        <Button
-          size="icon"
-          variant="outline"
-          onclick={() => showFilters = !showFilters}
-        >
-          <Filter class="w-3 h-3" />
-        </Button>
+          <Search class="w-7 h-7" />
+          Lecture Search
+        </h1>
+        <div class="flex flex-row w-full gap-2 mt-2">
+          <Input
+            class="text-sm w-full"
+            bind:value={searchBarInput}
+            placeholder="DSE242.2F, Harison Hall, etc."
+          ></Input>
+          <Button
+            size="icon"
+            variant="destructive"
+            onclick={() => {
+              searchBarInput = "";
+              filterTime = "";
+              filterLocation = "";
+              filterLecturer = "";
+            }}
+          >
+            <X class="w-3 h-3" />
+          </Button>
+          <Button
+            size="icon"
+            variant="outline"
+            onclick={() => (showFilters = !showFilters)}
+          >
+            <Filter class="w-3 h-3" />
+          </Button>
+        </div>
+        {#if showFilters}
+          <div class="w-full mt-2 grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <div class="flex items-center gap-2">
+              <Clock class="w-4 h-4" />
+              <Input
+                class="text-sm"
+                bind:value={filterTime}
+                placeholder="Filter by time"
+              />
+            </div>
+            <div class="flex items-center gap-2">
+              <User class="w-4 h-4" />
+              <select class="select" bind:value={filterLecturer}>
+                <option value="">All Lecturers</option>
+                {#each lecturers as lecturer}
+                  <option value={lecturer}>{lecturer}</option>
+                {/each}
+              </select>
+            </div>
+            <div class="flex items-center gap-2">
+              <MapPin class="w-4 h-4" />
+              <select class="select" bind:value={filterLocation}>
+                <option value="">All Floors</option>
+                {#each floors as floor}
+                  <option value={floor}>{floor}</option>
+                {/each}
+              </select>
+            </div>
+          </div>
+        {/if}
+        <div class="w-full mt-2 flex flex-row gap-1 flex-wrap">
+          <button
+            class={"branch-select w-full " + getBranchColorClass()}
+            onclick={toggleBranch}
+          >
+            {#if currentBranch === "ALL"}
+              Showing Every Branch
+            {:else}
+              Selected Branch - {currentBranch}
+            {/if}
+          </button>
+        </div>
+        <div class="w-full mt-2 flex flex-row gap-1 flex-wrap">
+          <button
+            class="tag"
+            onclick={() => {
+              searchBarInput = "DSE24.2F";
+            }}
+            aria-current={searchBarInput === "DSE24.2F" ? "true" : null}
+          >
+            DSE24.2F
+          </button>
+          <button
+            class="tag"
+            onclick={() => {
+              showFinishedLectures = !showFinishedLectures;
+            }}
+            aria-current={showFinishedLectures ? "true" : null}
+          >
+            Show Finished
+          </button>
+          <button class="tag" onclick={jumpToCurrentTime}>
+            Jump to Current
+          </button>
+        </div>
       </div>
-      {#if showFilters}
-        <div class="w-full mt-2 grid grid-cols-1 sm:grid-cols-3 gap-2">
-          <div class="flex items-center gap-2">
-            <Clock class="w-4 h-4" />
-            <Input
-              class="text-sm"
-              bind:value={filterTime}
-              placeholder="Filter by time"
-            />
-          </div>
-          <div class="flex items-center gap-2">
-            <User class="w-4 h-4" />
-            <select
-              class="select"
-              bind:value={filterLecturer}
-            >
-              <option value="">All Lecturers</option>
-              {#each lecturers as lecturer}
-                <option value={lecturer}>{lecturer}</option>
-              {/each}
-            </select>
-          </div>
-          <div class="flex items-center gap-2">
-            <MapPin class="w-4 h-4" />
-            <select
-              class="select"
-              bind:value={filterLocation}
-            >
-              <option value="">All Floors</option>
-              {#each floors as floor}
-                <option value={floor}>{floor}</option>
-              {/each}
-            </select>
-          </div>
+    </div>
+    <hr class="my-3"> 
+    <div class="mb-5 top-0 z-50">
+      <div class="flex items-center justify-center">
+        <div
+          class="flex flex-row items-center justify-center gap-1 sm:gap-2 w-fit p-2 bg-black/80 backdrop-blur-sm rounded-3xl"
+        >
+          <button
+            class="offset"
+            aria-current={currentOffset == 0 ? "true" : null}
+            onclick={() => (currentOffset = 0)}
+          >
+            Today
+          </button>
+          <button
+            class="offset"
+            aria-current={currentOffset == 1 ? "true" : null}
+            onclick={() => (currentOffset = 1)}
+          >
+            Tomorrow
+          </button>
+          <button
+            class="offset"
+            aria-current={currentOffset == 2 ? "true" : null}
+            onclick={() => (currentOffset = 2)}
+          >
+            Next {getDay(currentDate, 2)}
+          </button>
+        </div>
+      </div>
+    </div>
+    {#if loaded}
+      {#if lectures.filter((item) => (item.properties.branch === currentBranch || currentBranch === "ALL") && validateSearchQuery(item) && item.offset == currentOffset).length === 0}
+        <div class="h-full flex-1 flex flex-col gap-2 items-center">
+          <h2 class="text-sm text-muted-foreground mt-10">
+            {#if searchBarInput !== "" || filterTime || filterLocation || filterLecturer}
+              Nothing found for your search criteria
+            {:else}
+              No lectures found on the server for {getDay(
+                currentDate,
+                currentOffset,
+              )}
+            {/if}
+          </h2>
+        </div>
+      {:else}
+        <div class="flex flex-col gap-2">
+          {#each lectures as item, i (item.title + "-" + item.time?.start + "-" + item.location?.hall + "-" + item.offset + "-" + item.batch?.join("-") + "-" + i)}
+            {#if item.properties.branch === currentBranch || currentBranch === "ALL"}
+              {#if !isOver(item) && validateSearchQuery(item) && item.offset == currentOffset}
+                <div id="lecture-{item.title}">
+                  <LectureSlide lecture={item} />
+                </div>
+              {/if}
+            {/if}
+          {/each}
         </div>
       {/if}
-      <div class="w-full mt-2 flex flex-row gap-1 flex-wrap">
-        <button
-          class={"branch-select w-full " + getBranchColorClass()}
-          onclick={toggleBranch}
-        >
-          {#if currentBranch === "ALL"}
-            Showing Every Branch
-          {:else}
-            Selected Branch - {currentBranch}
-          {/if}
-        </button>
-      </div>
-      <div class="w-full mt-2 flex flex-row gap-1 flex-wrap">
-        <button
-          class="tag"
-          onclick={() => {
-            searchBarInput = "DSE24.2F";
-          }}
-          aria-current={searchBarInput === "DSE24.2F" ? "true" : null}
-        >
-          DSE24.2F
-        </button>
-        <button
-          class="tag"
-          onclick={() => {
-            showFinishedLectures = !showFinishedLectures;
-          }}
-          aria-current={showFinishedLectures ? "true" : null}
-        >
-          Show Finished
-        </button>
-        <button
-          class="tag"
-          onclick={jumpToCurrentTime}
-        >
-          Jump to Current
-        </button>
-      </div>
-    </div>
-  </div>
-  {#if loaded}
-    {#if lectures.filter((item) => (item.properties.branch === currentBranch || currentBranch === "ALL") && validateSearchQuery(item) && item.offset == currentOffset).length === 0}
-      <div class="h-full flex-1 flex flex-col gap-2 items-center">
-        <h2 class="text-sm text-muted-foreground mt-10">
-          {#if searchBarInput !== "" || filterTime || filterLocation || filterLecturer}
-            Nothing found for your search criteria
-          {:else}
-            No lectures found on the server for {getDay(currentDate, currentOffset)}
-          {/if}
-        </h2>
-      </div>
     {:else}
-      <div class="flex flex-col gap-2">
-        {#each lectures as item, i (item.title + '-' + item.time?.start + '-' + item.location?.hall + '-' + item.offset + '-' + item.batch?.join('-') + '-' + i)}
-          {#if item.properties.branch === currentBranch || currentBranch === "ALL"}
-            {#if !isOver(item) && validateSearchQuery(item) && item.offset == currentOffset}
-              <div id="lecture-{item.title}">
-                <LectureSlide lecture={item} />
-              </div>
-            {/if}
-          {/if}
-        {/each}
+      <div class="h-full flex-1 flex flex-col gap-2 items-center">
+        <div class="mt-10 flex items-center flex-col gap-2">
+          <Loader2 class="w-5 h-5 animate-spin opacity-60" />
+          <h1
+            class="text-xs mt-3 max-w-[250px] text-center text-muted-foreground"
+          >
+            {getRandomQuote()}
+          </h1>
+        </div>
       </div>
     {/if}
-  {:else}
-    <div class="h-full flex-1 flex flex-col gap-2 items-center">
-      <div class="mt-10 flex items-center flex-col gap-2">
-        <Loader2 class="w-5 h-5 animate-spin opacity-60" />
-        <h1
-          class="text-xs mt-3 max-w-[250px] text-center text-muted-foreground"
-        >
-          {getRandomQuote()}
-        </h1>
-      </div>
-    </div>
-  {/if}
+  </div>
+
+
 </div>
 
 <style>
@@ -330,6 +364,7 @@
   }
 
   .offset {
+    display: flex;
     @apply px-2 sm:px-4 py-1.5 sm:py-2 rounded-3xl text-xs sm:text-sm;
     @apply bg-muted hover:bg-muted/80;
     transition: all 150ms ease-out;
