@@ -282,8 +282,9 @@
         </div>
       </div>
     </div>
-    <hr class="my-3"> 
-    <div class="mb-5 top-0 z-50">
+
+
+    <div class="fixed left-0 bottom-0 z-50 w-full px-4 py-8">
       <div class="flex items-center justify-center">
         <div
           class="flex flex-row items-center justify-center gap-1 sm:gap-2 w-fit p-2 bg-black/80 backdrop-blur-sm rounded-3xl"

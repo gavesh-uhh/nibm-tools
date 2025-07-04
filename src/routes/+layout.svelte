@@ -32,10 +32,10 @@
   </div>
 {/if}
 
+
 <div
   class="p-4 flex flex-col min-h-screen"
   class:opacity-0={!showContent}
-  class:animate-fade-in={showContent}
 >
   {@render children()}
 </div>
@@ -57,27 +57,11 @@
   @keyframes text-appear {
     0% {
       opacity: 0;
-      transform: translateY(20px);
     }
     100% {
       opacity: 1;
-      transform: translateY(0);
     }
   }
 
-  @keyframes fade-in {
-    from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  .animate-fade-in {
-    animation: fade-in 0.6s ease-out forwards;
-  }
 </style>
 

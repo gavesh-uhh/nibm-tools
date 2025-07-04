@@ -1,7 +1,17 @@
 <script lang="ts">
-  import { Link, Star, ExternalLink, Github, Settings } from "lucide-svelte";
+  import {
+    Download,
+    Link,
+    Star,
+    ExternalLink,
+    Github,
+    Loader,
+    Settings,
+  } from "lucide-svelte";
   import Button from "$lib/components/ui/button/button.svelte";
   import { onMount } from "svelte";
+  import * as Alert from "$lib/components/ui/alert/index";
+  import { fade } from "svelte/transition";
 
   interface Module {
     id: string;
@@ -66,13 +76,22 @@
     }
   }
 
+  let nextLecture: Lecture | undefined = $state(undefined);
   let starredModules: string[] = $state([]);
   let showInstallGuide = $state(false);
+  let isCheckingLecture = $state(false);
+  let userSettings: { batch?: string; fullBatch?: string } = $state({});
+  let showNoLectures = $state(false);
 
-  onMount(() => {
+  onMount(async () => {
     const saved = localStorage.getItem("starred-modules");
     if (saved) {
       starredModules = JSON.parse(saved);
+    }
+
+    const savedSettings = localStorage.getItem("user-settings");
+    if (savedSettings) {
+      userSettings = JSON.parse(savedSettings);
     }
 
     const preloadLectures = async () => {
@@ -84,8 +103,61 @@
       }
     };
 
+    const getPendingLectures = async () => {
+      try {
+        if (localStorage.getItem("user-settings") == null) return;
+        isCheckingLecture = true;
+        userSettings = JSON.parse(
+          localStorage.getItem("user-settings") ?? "{}",
+        );
+        const userBatch = userSettings.batch;
+        const userBranch = userSettings.fullBatch;
+        const currentDate = new Date();
+        const dayString =
+          currentDate.getFullYear() +
+          "-" +
+          (currentDate.getMonth() + 1) +
+          "-" +
+          currentDate.getDate();
+
+        const response = await fetch(
+          `/api/lectures?date=${dayString}&batch=${userBatch}&limit=3`,
+        );
+        const data = await response.json();
+        let found = false;
+        for (const lec of data) {
+          if (lec.time.start == null || lec.time.end == null) continue;
+          const currentTime =
+            currentDate.getHours() * 60 + currentDate.getMinutes();
+          const lecStartTime = await convertLecToUnitMinutes(lec.time.start);
+          if (currentTime < lecStartTime) {
+            nextLecture = lec;
+            found = true;
+            break;
+          }
+        }
+        isCheckingLecture = false;
+        if (!found) {
+          nextLecture = undefined;
+          showNoLectures = true;
+          setTimeout(() => (showNoLectures = false), 2500);
+        }
+      } catch (err) {
+        isCheckingLecture = false;
+        console.log("Pending Failed :- " + (err as Error).message);
+      }
+    };
+
+    await getPendingLectures();
     setTimeout(preloadLectures, 1000);
   });
+
+  const convertLecToUnitMinutes = async (timeString: string) => {
+    const splittedString = timeString.split(":");
+    const hours = parseInt(splittedString[0]) * 60;
+    const mins = parseInt(splittedString[1]);
+    return hours + mins;
+  };
 
   function togglePin(moduleId: string) {
     if (starredModules.includes(moduleId)) {
@@ -138,42 +210,134 @@
 </script>
 
 <div class="flex-1 flex flex-col">
-  <div class="flex flex-col items-center py-8 text-center md:py-12">
+  <div class="flex flex-col items-center pt-8 pb-8 text-center md:py-12">
     <h1 class="font-bold tracking-tight text-5xl">NIBM Toolkit</h1>
-    <div class="mt-6 flex flex-col justify-center gap-4">
-      {#if getDeviceType() == "android" || getDeviceType() == "iphone"}
-        <Button
-          size="lg"
-          class="bg-primary-foreground text-primary hover:bg-primary-foreground/90"
-          onclick={showInstallInstructions}
-        >
-          {#if getDeviceType() === "android"}
-            <svg class="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="currentColor">
-              <path
-                d="M17.523 15.3414c-.5511 0-.9993-.4486-.9997s.4482-.9993.9993-.9993c.5511 0 .9993.4482.9993.9993.0001.5511-.4482.9997-.9993.9997m-11.046 0c-.5511 0-.9993-.4486-.9997s.4482-.9993.9993-.9993c.5511 0 .9993.4482.9993.9993 0 .5511-.4482.9997-.9993.9997m11.4045-6.02l1.9973-3.4592a.416.416 0 00-.1521-.5676.416.416 0 00-.5676.1521l-2.0223 3.503C15.5902 8.2432 13.8533 7.4287 11.9797 7.4287c-1.8736 0-3.6105.8145-4.8057 2.1708L5.1517 6.0962a.416.416 0 00-.5676-.1521.416.416 0 00-.1521.5676L6.4297 9.3214C4.9447 10.6934 4 12.5747 4 14.6503c0 3.7666 3.1338 6.8503 6.9003 6.8503 3.7666 0 6.9003-3.0837 6.9003-6.8503 0-2.0756-.9447-3.9569-2.4195-5.3289M13.9797 20.5003c-3.0385 0-5.5003-2.4618-5.5003-5.5003 0-1.7869.8518-3.3735 2.1797-4.3716l1.3643 2.3643a.416.416 0 00.5676.1521.416.416 0 00.1521-.5676l-1.3643-2.3643c.6655-.2393 1.3789-.3716 2.1119-.3716.733 0 1.4464.1323 2.1119.3716l-1.3643 2.3643a.416.416 0 00.1521.5676.416.416 0 00.5676-.1521l1.3643-2.3643c1.3279.9981 2.1797 2.5847 2.1797 4.3716 0 3.0385-2.4618 5.5003-5.5003 5.5003"
-              />
-            </svg>
-            {getInstallText()}
-          {:else if getDeviceType() === "iphone"}
-            <svg class="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="currentColor">
-              <path
-                d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.53 4.08zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"
-              />
-            </svg>
-            {getInstallText()}
-          {/if}
-        </Button>
-      {/if}
+    <div
+      class="mt-6 items-center justify-center flex flex-wrap justify-center gap-2"
+    >
       <Button
         href="https://www.buymeacoffee.com/gaveshsaparamadu"
         size="lg"
-        class="bg-primary-foreground text-primary hover:bg-primary-foreground/90"
+        class="bg-primary-foreground text-primary hover:bg-primary-foreground/90 h-12"
         >🍻 Support the Project</Button
       >
+      {#if getDeviceType() == "android" || getDeviceType() == "iphone"}
+        <Button
+          size="icon"
+          class="bg-primary-foreground text-primary hover:bg-primary-foreground/90 h-12 w-12 flex items-center justify-center"
+          onclick={showInstallInstructions}
+        >
+          <Download class="w-4 h-4" />
+        </Button>
+      {/if}
     </div>
     <p class="mt-4 text-xs text-muted-foreground">
       Developed with ❤️ by Gavesh
     </p>
+  </div>
+
+  {#if userSettings.batch && isCheckingLecture}
+    <div class="w-full px-2 mb-4 sm:px-8">
+      <div class="relative w-full max-w-xl mx-auto">
+        <Alert.Root variant="default" class="w-full rounded-xl ">
+          <div class="flex flex-col gap-1 items-center justify-center py-4">
+
+            <span
+              class="text-xs text-muted-foreground flex flex-row gap-2 items-center font-medium uppercase tracking-wide mb-1"
+              >
+            <Loader class="w-4 h-4 animation-spin" />
+             Checking for your next lecture...</span
+            >
+          </div>
+        </Alert.Root>
+      </div>
+    </div>
+  {/if}
+
+  <div class="w-full px-2 mb-4 sm:px-8 flex items-center justify-center">
+    {#if showNoLectures}
+      <div
+        class="relative w-full max-w-xl mx-auto"
+        in:fade={{ duration: 300 }}
+        out:fade={{ duration: 600 }}
+      >
+        <Alert.Root variant="destructive" class="w-full rounded-xl min-h-[120px] flex items-center">
+          <div class="flex flex-col gap-1 items-center justify-center py-4 w-full">
+            <span class="text-lg font-bold text-destructive"
+              >NO LECTURES FOUND :(</span
+            >
+          </div>
+        </Alert.Root>
+      </div>
+    {:else if nextLecture != undefined}
+      <div class="relative w-full max-w-xl mx-auto">
+        <div
+          class="absolute inset-0 -z-10 rounded-xl pointer-events-none opacity-25"
+        >
+          {#if nextLecture.properties.is_exam}
+            <div
+              class="absolute -top-16 -left-16 w-80 h-80 bg-gradient-to-br from-red-300 via-yellow-400 to-orange-500 blur-[90px] rounded-full opacity-50 animate-[gemini-spin1_8s_linear_infinite]"
+            ></div>
+            <div
+              class="absolute -bottom-16 -right-16 w-80 h-80 bg-gradient-to-tr from-amber-400 via-red-400 to-pink-500 blur-[90px] rounded-full opacity-50 animate-[gemini-spin2_10s_linear_infinite]"
+            ></div>
+            <div
+              class="absolute inset-0 rounded-xl bg-gradient-to-br from-red-50 via-yellow-50 to-orange-50 opacity-80"
+            ></div>
+          {:else}
+            <!-- Regular lecture gradients -->
+            <div
+              class="absolute -top-16 -left-16 w-80 h-80 bg-gradient-to-br from-cyan-400 via-fuchsia-500 to-indigo-500 blur-[90px] rounded-full opacity-60 animate-[gemini-spin1_8s_linear_infinite]"
+            ></div>
+            <div
+              class="absolute -bottom-16 -right-16 w-80 h-80 bg-gradient-to-tr from-pink-400 via-blue-400 to-purple-500 blur-[90px] rounded-full opacity-60 animate-[gemini-spin2_10s_linear_infinite]"
+            ></div>
+            <div
+              class="absolute inset-0 rounded-xl bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 opacity-90"
+            ></div>
+          {/if}
+        </div>
+        <Alert.Root variant="default" class="w-full rounded-xl min-h-[120px] relative">
+          <div class="flex flex-col gap-1 py-2">
+            <span
+              class="text-xs text-muted-foreground font-medium uppercase tracking-wide"
+              >Next
+              {#if nextLecture.properties.is_exam}
+                Exam
+              {:else}
+                Lecture
+              {/if}
+            </span>
+            <Alert.Title
+              class="text-base sm:text-lg font-semibold text-foreground"
+              >{nextLecture.title}</Alert.Title
+            >
+            <Alert.Description>
+              <div
+                class="flex flex-col sm:flex-row sm:items-center sm:gap-4 text-sm text-muted-foreground"
+              >
+                {#if nextLecture.properties.is_exam}
+                  <span><span class="font-medium text-red-600">EXAM</span></span>
+                {:else}
+                  <span
+                    >by <span class="font-medium text-foreground"
+                      >{nextLecture.lecturer}</span
+                    ></span
+                  >
+                {/if}
+                <span class="hidden sm:inline">&bull;</span>
+                <span>{nextLecture.time.start} - {nextLecture.time.end}</span>
+                <span class="hidden sm:inline">&bull;</span>
+                <span
+                  >{nextLecture.location.hall} - {nextLecture.location
+                    .floor}</span
+                >
+              </div>
+            </Alert.Description>
+          </div>
+        </Alert.Root>
+      </div>
+    {/if}
   </div>
 
   <div id="modules" class="grid grid-cols-1 gap-4 px-2 sm:px-8 md:grid-cols-2">

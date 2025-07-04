@@ -3,6 +3,7 @@ import axios from "axios";
 import * as cheerio from "cheerio";
 
 const SCRAPE_URL = "https://lms.nibmworldwide.com/mod/nibm/display.php";
+
 const SUPPORTED_BRANCHES = [
   { keyword: "CO", name: "SOC" },
   { keyword: "NIC", name: "NIC" },
@@ -12,6 +13,7 @@ const SUPPORTED_BRANCHES = [
 export const GET = async ({ url }: { url: URL }): Promise<Response> => {
   const date = url.searchParams.get("date");
   const day_limit = parseInt(url.searchParams.get("limit") ?? "3");
+  const batch = url.searchParams.get("batch");
   if (!date) return json({ error: "Date is required" }, { status: 400 });
 
   const requests: Promise<Lecture[]>[] = [];
@@ -24,8 +26,11 @@ export const GET = async ({ url }: { url: URL }): Promise<Response> => {
     requests.push(...branchRequests);
   }
 
-  const results = await Promise.all(requests);
-  return json(results.flat());
+  const results = (await Promise.all(requests)).flat();
+  const filtered = batch
+    ? results.filter((lecture) => lecture.batch && lecture.batch.includes(batch))
+    : results;
+  return json(filtered);
 };
 
 const fetchData = async (url: string, branch: string, offset: number): Promise<Lecture[]> => {
