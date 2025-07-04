@@ -46,6 +46,13 @@
     showSuccess = true;
     setTimeout(() => (showSuccess = false), 2000);
   }
+
+  function clearSettings() {
+    localStorage.removeItem("user-settings");
+    userSettings = { batch: "", index: "", fullBatch: undefined };
+    showSuccess = true;
+    setTimeout(() => (showSuccess = false), 2000);
+  }
 </script>
 
 <div class="max-w-md mx-auto p-4 flex flex-col gap-4 bg-background rounded-xl shadow-lg mt-8 relative">
@@ -84,7 +91,8 @@
       </Select.Content>
     </Select.Root>
   </div>
-  <div class="flex justify-end mt-4">
+  <div class="flex justify-end mt-4 gap-2">
     <Button onclick={saveSettings} class="px-5 py-2 text-base rounded-md">Save Settings</Button>
+    <Button onclick={clearSettings} class="px-5 py-2 text-base rounded-md bg-destructive text-destructive-foreground hover:bg-destructive/90" variant="destructive">Reset</Button>
   </div>
 </div>
