@@ -1,5 +1,7 @@
 <script lang="ts">
   import {
+    Clock,
+    MapPin,
     Download,
     Link,
     Star,
@@ -54,7 +56,20 @@
     },
   ]);
 
-  function getDeviceType(): "android" | "iphone" | "desktop" {
+  // Pull-to-refresh variables
+  let isRefreshing = $state(false);
+  let pullStartY = 0;
+  let pullDistance = 0;
+  let isPulling = false;
+
+  // Haptic feedback function
+  function triggerHapticFeedback() {
+    if ("vibrate" in navigator) {
+      navigator.vibrate(50); // Short vibration for feedback
+    }
+  }
+
+  function getDeviceType(): string {
     const userAgent = navigator.userAgent.toLowerCase();
     if (/android/.test(userAgent)) {
       return "android";
@@ -83,7 +98,99 @@
   let userSettings: { batch?: string; fullBatch?: string } = $state({});
   let showNoLectures = $state(false);
 
-  onMount(async () => {
+  const convertLecToUnitMinutes = async (timeString: string) => {
+    const splittedString = timeString.split(":");
+    const hours = parseInt(splittedString[0]) * 60;
+    const mins = parseInt(splittedString[1]);
+    return hours + mins;
+  };
+
+  const getPendingLectures = async () => {
+    try {
+      if (localStorage.getItem("user-settings") == null) return;
+      isCheckingLecture = true;
+      userSettings = JSON.parse(localStorage.getItem("user-settings") ?? "{}");
+      const userBatch = userSettings.batch;
+      const userBranch = userSettings.fullBatch;
+      const currentDate = new Date();
+      const dayString =
+        currentDate.getFullYear() +
+        "-" +
+        (currentDate.getMonth() + 1) +
+        "-" +
+        currentDate.getDate();
+
+      const response = await fetch(
+        `/api/lectures?date=${dayString}&batch=${userBatch}&limit=3`,
+      );
+      const data = await response.json();
+      let found = false;
+      for (const lec of data) {
+        if (lec.time.start == null || lec.time.end == null) continue;
+        const currentTime =
+          currentDate.getHours() * 60 + currentDate.getMinutes();
+        const lecStartTime = await convertLecToUnitMinutes(lec.time.start);
+        if (currentTime < lecStartTime) {
+          nextLecture = lec;
+          found = true;
+          break;
+        }
+      }
+      isCheckingLecture = false;
+      if (!found) {
+        nextLecture = undefined;
+        showNoLectures = true;
+        setTimeout(() => (showNoLectures = false), 2500);
+      }
+    } catch (err) {
+      isCheckingLecture = false;
+      console.log("Pending Failed :- " + (err as Error).message);
+    }
+  };
+
+  // Pull-to-refresh handlers
+  function handleTouchStart(event: TouchEvent) {
+    if (window.scrollY === 0) {
+      pullStartY = event.touches[0].clientY;
+      isPulling = true;
+    }
+  }
+
+  function handleTouchMove(event: TouchEvent) {
+    if (!isPulling) return;
+
+    pullDistance = event.touches[0].clientY - pullStartY;
+
+    if (pullDistance > 0 && window.scrollY === 0) {
+      event.preventDefault();
+      document.body.style.transform = `translateY(${Math.min(pullDistance * 0.5, 100)}px)`;
+    }
+  }
+
+  function handleTouchEnd() {
+    if (!isPulling) return;
+
+    isPulling = false;
+    document.body.style.transform = "";
+
+    if (pullDistance > 100) {
+      // Trigger refresh
+      refreshData();
+    }
+
+    pullDistance = 0;
+  }
+
+  async function refreshData() {
+    isRefreshing = true;
+    try {
+      await getPendingLectures();
+    } finally {
+      isRefreshing = false;
+    }
+  }
+
+  onMount(() => {
     const saved = localStorage.getItem("starred-modules");
     if (saved) {
       starredModules = JSON.parse(saved);
@@ -103,63 +210,25 @@
       }
     };
 
-    const getPendingLectures = async () => {
-      try {
-        if (localStorage.getItem("user-settings") == null) return;
-        isCheckingLecture = true;
-        userSettings = JSON.parse(
-          localStorage.getItem("user-settings") ?? "{}",
-        );
-        const userBatch = userSettings.batch;
-        const userBranch = userSettings.fullBatch;
-        const currentDate = new Date();
-        const dayString =
-          currentDate.getFullYear() +
-          "-" +
-          (currentDate.getMonth() + 1) +
-          "-" +
-          currentDate.getDate();
-
-        const response = await fetch(
-          `/api/lectures?date=${dayString}&batch=${userBatch}&limit=3`,
-        );
-        const data = await response.json();
-        let found = false;
-        for (const lec of data) {
-          if (lec.time.start == null || lec.time.end == null) continue;
-          const currentTime =
-            currentDate.getHours() * 60 + currentDate.getMinutes();
-          const lecStartTime = await convertLecToUnitMinutes(lec.time.start);
-          if (currentTime < lecStartTime) {
-            nextLecture = lec;
-            found = true;
-            break;
-          }
-        }
-        isCheckingLecture = false;
-        if (!found) {
-          nextLecture = undefined;
-          showNoLectures = true;
-          setTimeout(() => (showNoLectures = false), 2500);
-        }
-      } catch (err) {
-        isCheckingLecture = false;
-        console.log("Pending Failed :- " + (err as Error).message);
-      }
-    };
-
-    await getPendingLectures();
+    getPendingLectures();
     setTimeout(preloadLectures, 1000);
+
+    // Add pull-to-refresh event listeners
+    document.addEventListener("touchstart", handleTouchStart, {
+      passive: false,
+    });
+    document.addEventListener("touchmove", handleTouchMove, { passive: false });
+    document.addEventListener("touchend", handleTouchEnd);
+
+    return () => {
+      document.removeEventListener("touchstart", handleTouchStart);
+      document.removeEventListener("touchmove", handleTouchMove);
+      document.removeEventListener("touchend", handleTouchEnd);
+    };
   });
 
-  const convertLecToUnitMinutes = async (timeString: string) => {
-    const splittedString = timeString.split(":");
-    const hours = parseInt(splittedString[0]) * 60;
-    const mins = parseInt(splittedString[1]);
-    return hours + mins;
-  };
-
   function togglePin(moduleId: string) {
+    triggerHapticFeedback();
     if (starredModules.includes(moduleId)) {
       starredModules = starredModules.filter((id) => id !== moduleId);
     } else {
@@ -169,6 +238,7 @@
   }
 
   function showInstallInstructions() {
+    triggerHapticFeedback();
     showInstallGuide = true;
   }
 
@@ -209,7 +279,17 @@
   );
 </script>
 
-<div class="flex-1 flex flex-col">
+<div class="flex-1 flex flex-col overflow-x-hidden">
+  <!-- Pull-to-refresh indicator -->
+  {#if isRefreshing}
+    <div
+      class="fixed top-0 left-0 right-0 bg-primary text-primary-foreground/50 py-2 text-center z-50 flex items-center justify-center gap-2"
+    >
+      <Loader class="w-4 h-4 animate-spin" />
+      <span>Refreshing</span>
+    </div>
+  {/if}
+
   <div class="flex flex-col items-center pt-8 pb-8 text-center md:py-12">
     <h1 class="font-bold tracking-tight text-5xl">NIBM Toolkit</h1>
     <div
@@ -237,16 +317,15 @@
   </div>
 
   {#if userSettings.batch && isCheckingLecture}
-    <div class="w-full px-2 mb-4 sm:px-8">
+    <div class="w-full px-2 sm:px-8">
       <div class="relative w-full max-w-xl mx-auto">
         <Alert.Root variant="default" class="w-full rounded-xl ">
           <div class="flex flex-col gap-1 items-center justify-center py-4">
-
             <span
               class="text-xs text-muted-foreground flex flex-row gap-2 items-center font-medium uppercase tracking-wide mb-1"
-              >
-            <Loader class="w-4 h-4 animation-spin" />
-             Checking for your next lecture...</span
+            >
+              <Loader class="w-4 h-4 animate-spin" />
+              Checking for your next lecture...</span
             >
           </div>
         </Alert.Root>
@@ -254,15 +333,22 @@
     </div>
   {/if}
 
-  <div class="w-full px-2 mb-4 sm:px-8 flex items-center justify-center">
+  <div
+    class="mb-4 px-2 sm:px-8 w-full flex items-center justify-center overflow-x-hidden"
+  >
     {#if showNoLectures}
       <div
-        class="relative w-full max-w-xl mx-auto"
+        class="relative w-full max-w-xl mx-auto overflow-hidden"
         in:fade={{ duration: 300 }}
         out:fade={{ duration: 600 }}
       >
-        <Alert.Root variant="destructive" class="w-full rounded-xl min-h-[120px] flex items-center">
-          <div class="flex flex-col gap-1 items-center justify-center py-4 w-full">
+        <Alert.Root
+          variant="destructive"
+          class="w-full rounded-xl min-h-[120px] flex items-center"
+        >
+          <div
+            class="flex flex-col gap-1 items-center justify-center py-4 w-full"
+          >
             <span class="text-lg font-bold text-destructive"
               >NO LECTURES FOUND :(</span
             >
@@ -270,72 +356,67 @@
         </Alert.Root>
       </div>
     {:else if nextLecture != undefined}
-      <div class="relative w-full max-w-xl mx-auto">
-        <div
-          class="absolute inset-0 -z-10 rounded-xl pointer-events-none opacity-25"
-        >
-          {#if nextLecture.properties.is_exam}
-            <div
-              class="absolute -top-16 -left-16 w-80 h-80 bg-gradient-to-br from-red-300 via-yellow-400 to-orange-500 blur-[90px] rounded-full opacity-50 animate-[gemini-spin1_8s_linear_infinite]"
-            ></div>
-            <div
-              class="absolute -bottom-16 -right-16 w-80 h-80 bg-gradient-to-tr from-amber-400 via-red-400 to-pink-500 blur-[90px] rounded-full opacity-50 animate-[gemini-spin2_10s_linear_infinite]"
-            ></div>
-            <div
-              class="absolute inset-0 rounded-xl bg-gradient-to-br from-red-50 via-yellow-50 to-orange-50 opacity-80"
-            ></div>
-          {:else}
-            <!-- Regular lecture gradients -->
-            <div
-              class="absolute -top-16 -left-16 w-80 h-80 bg-gradient-to-br from-cyan-400 via-fuchsia-500 to-indigo-500 blur-[90px] rounded-full opacity-60 animate-[gemini-spin1_8s_linear_infinite]"
-            ></div>
-            <div
-              class="absolute -bottom-16 -right-16 w-80 h-80 bg-gradient-to-tr from-pink-400 via-blue-400 to-purple-500 blur-[90px] rounded-full opacity-60 animate-[gemini-spin2_10s_linear_infinite]"
-            ></div>
-            <div
-              class="absolute inset-0 rounded-xl bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 opacity-90"
-            ></div>
-          {/if}
-        </div>
-        <Alert.Root variant="default" class="w-full rounded-xl min-h-[120px] relative">
-          <div class="flex flex-col gap-1 py-2">
-            <span
-              class="text-xs text-muted-foreground font-medium uppercase tracking-wide"
-              >Next
-              {#if nextLecture.properties.is_exam}
-                Exam
-              {:else}
-                Lecture
-              {/if}
-            </span>
-            <Alert.Title
-              class="text-base sm:text-lg font-semibold text-foreground"
-              >{nextLecture.title}</Alert.Title
-            >
-            <Alert.Description>
-              <div
-                class="flex flex-col sm:flex-row sm:items-center sm:gap-4 text-sm text-muted-foreground"
+      <div class="relative w-full max-w-xl mx-auto overflow-hidden">
+        <div class="glowing-border">
+          <Alert.Root
+            variant="default"
+            class="w-full rounded-xl min-h-[120px] relative overflow-hidden"
+          >
+            <div class="flex flex-col gap-1 py-2 px-1">
+              <span
+                class="text-xs text-muted-foreground font-medium uppercase tracking-wide"
               >
+                Next
                 {#if nextLecture.properties.is_exam}
-                  <span><span class="font-medium text-red-600">EXAM</span></span>
+                  Exam
                 {:else}
-                  <span
-                    >by <span class="font-medium text-foreground"
-                      >{nextLecture.lecturer}</span
-                    ></span
-                  >
+                  Lecture
                 {/if}
-                <span class="hidden sm:inline">&bull;</span>
-                <span>{nextLecture.time.start} - {nextLecture.time.end}</span>
-                <span class="hidden sm:inline">&bull;</span>
-                <span
-                  >{nextLecture.location.hall} - {nextLecture.location
-                    .floor}</span
+              </span>
+              <Alert.Title
+                class="text-base sm:text-lg font-semibold text-foreground break-words"
+              >
+                {nextLecture.title}
+              </Alert.Title>
+
+              <Alert.Description>
+                <div
+                  class="flex flex-col sm:flex-row sm:items-center sm:gap-4 text-sm text-muted-foreground space-y-1 sm:space-y-0"
                 >
-              </div>
-            </Alert.Description>
-          </div>
-        </Alert.Root>
+                  {#if nextLecture.properties.is_exam}
+                    <span class="flex-shrink-0">
+                      <span class="font-medium text-red-600">EXAM</span>
+                    </span>
+                  {:else}
+                    <span
+                      class="flex-shrink-0 break-words flex items-center gap-1"
+                    >
+                      by
+                      <span
+                        class="font-medium text-foreground flex items-center gap-1"
+                      >
+                        {nextLecture.lecturer}
+                      </span>
+                      <span class="flex-shrink-0 flex gap-1 items-center">
+                        - <Clock class="w-4 h-4" />({nextLecture.time.start} -
+                        {nextLecture.time.end})
+                      </span>
+                    </span>
+                  {/if}
+
+                  <span class="hidden sm:inline flex-shrink-0">&bull;</span>
+
+                  <span
+                    class="flex-shrink-0 break-words flex items-center gap-1"
+                  >
+                    <MapPin class="w-4 h-4" />
+                    {nextLecture.location.hall} - {nextLecture.location.floor}
+                  </span>
+                </div>
+              </Alert.Description>
+            </div>
+          </Alert.Root>
+        </div>
       </div>
     {/if}
   </div>
@@ -416,6 +497,21 @@
       </a>
     </div>
   </footer>
+
+  <!-- Mobile Floating Action Button -->
+  <div class="fixed bottom-20 right-4 sm:hidden z-40">
+    <Button
+      size="icon"
+      class="w-14 h-14 rounded-full shadow-lg bg-primary hover:bg-primary/90"
+      onclick={() => {
+        triggerHapticFeedback();
+        showInstallInstructions();
+      }}
+      aria-label="Quick actions"
+    >
+      <Download class="w-6 h-6" />
+    </Button>
+  </div>
 </div>
 
 {#if showInstallGuide}
@@ -450,3 +546,88 @@
     </div>
   </div>
 {/if}
+
+<style>
+  @property --glow-deg {
+    syntax: "<angle>";
+    inherits: true;
+    initial-value: -90deg;
+  }
+
+  @property --clr-1 {
+    syntax: "<color>";
+    inherits: true;
+    initial-value: #8b5cf6;
+  }
+
+  @property --clr-2 {
+    syntax: "<color>";
+    inherits: true;
+    initial-value: #3b82f6;
+  }
+
+  @property --clr-3 {
+    syntax: "<color>";
+    inherits: true;
+    initial-value: #ec4899;
+  }
+
+  @property --clr-4 {
+    syntax: "<color>";
+    inherits: true;
+    initial-value: #8b5cf6;
+  }
+
+  @property --clr-5 {
+    syntax: "<color>";
+    inherits: true;
+    initial-value: #3b82f6;
+  }
+
+  .glowing-border {
+    --gradient-glow: var(--clr-1), var(--clr-2), var(--clr-3), var(--clr-4),
+      var(--clr-5), var(--clr-1);
+    --border-width: 3px;
+    --glow-size: 1rem;
+    --glow-intensity: 0.125;
+    border: var(--border-width, 3px) solid transparent;
+    border-radius: 16px;
+    background:
+      linear-gradient(hsl(var(--background)) 0 0) padding-box,
+      conic-gradient(from var(--glow-deg), var(--gradient-glow)) border-box;
+    position: relative;
+    isolation: isolate;
+
+    animation: glow 10s infinite linear;
+  }
+
+  @keyframes glow {
+    100% {
+      --glow-deg: 270deg;
+    }
+  }
+
+  .glowing-border::before,
+  .glowing-border::after {
+    content: "";
+    position: absolute;
+    border-radius: inherit;
+  }
+
+  .glowing-border::before {
+    z-index: -1;
+    background: hsl(var(--background));
+    inset: 0.5rem;
+    scale: 1 1;
+    transform-origin: center;
+    filter: blur(var(--glow-size, 1rem));
+  }
+
+  .glowing-border::after {
+    z-index: -2;
+    inset: -1.5rem;
+    background: conic-gradient(from var(--glow-deg), var(--gradient-glow));
+    filter: blur(var(--glow-size, 1rem));
+    opacity: var(--glow-intensity, 0.125);
+  }
+</style>

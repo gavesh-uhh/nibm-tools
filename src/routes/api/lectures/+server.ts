@@ -10,11 +10,21 @@ const SUPPORTED_BRANCHES = [
   { keyword: "RJ", name: "SOB" }
 ];
 
+const cache = new Map<string, { data: Lecture[], timestamp: number }>();
+const CACHE_DURATION = 5 * 60 * 1000; 
+
 export const GET = async ({ url }: { url: URL }): Promise<Response> => {
   const date = url.searchParams.get("date");
   const day_limit = parseInt(url.searchParams.get("limit") ?? "3");
   const batch = url.searchParams.get("batch");
   if (!date) return json({ error: "Date is required" }, { status: 400 });
+
+  const cacheKey = `${date}-${day_limit}-${batch || 'all'}`;
+  
+  const cached = cache.get(cacheKey);
+  if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+    return json(cached.data);
+  }
 
   const requests: Promise<Lecture[]>[] = [];
 
@@ -30,6 +40,10 @@ export const GET = async ({ url }: { url: URL }): Promise<Response> => {
   const filtered = batch
     ? results.filter((lecture) => lecture.batch && lecture.batch.includes(batch))
     : results;
+  
+  // Cache the result
+  cache.set(cacheKey, { data: filtered, timestamp: Date.now() });
+  
   return json(filtered);
 };
 

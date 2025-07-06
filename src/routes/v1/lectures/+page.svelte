@@ -6,12 +6,10 @@
     Search,
     X,
     Loader2,
-    Calendar,
     Clock,
     MapPin,
     User,
     Filter,
-    ArrowRight,
   } from "lucide-svelte";
   import Input from "$lib/components/ui/input/input.svelte";
   import Button from "$lib/components/ui/button/button.svelte";
@@ -25,6 +23,7 @@
   };
 
   let loaded: boolean = $state(false);
+  let isLoading: boolean = $state(true);
   let showFinishedLectures: boolean = $state(true);
   let searchBarInput: string = $state("");
   let currentBranch: string = $state("SOC");
@@ -37,6 +36,7 @@
   let filterLecturer: string = $state("");
   let lecturers: string[] = $state([]);
   let floors: string[] = $state([]);
+  let searchTimeout: number | undefined = undefined;
 
   const getBranchColorClass = (): string => {
     if (currentBranch === "SOC") return "soc";
@@ -58,7 +58,7 @@
   };
 
   const loadLectures = async () => {
-    loaded = false;
+    isLoading = true;
     currentDate = new Date();
     const dayString =
       currentDate.getFullYear() +
@@ -66,19 +66,36 @@
       (currentDate.getMonth() + 1) +
       "-" +
       currentDate.getDate();
-    const response = await fetch("/api/lectures?date=" + dayString);
-    const data = await response.json();
-    lectures = data;
+    
+    try {
+      const response = await fetch("/api/lectures?date=" + dayString);
+      const data = await response.json();
+      lectures = data;
 
-    // Extract unique lecturers and floors
-    lecturers = [
-      ...new Set(data.map((l: Lecture) => l.lecturer).filter(Boolean)),
-    ].sort() as string[];
-    floors = [
-      ...new Set(data.map((l: Lecture) => l.location?.hall).filter(Boolean)),
-    ].sort() as string[];
+      // Extract unique lecturers and floors
+      lecturers = [
+        ...new Set(data.map((l: Lecture) => l.lecturer).filter(Boolean)),
+      ].sort() as string[];
+      floors = [
+        ...new Set(data.map((l: Lecture) => l.location?.hall).filter(Boolean)),
+      ].sort() as string[];
 
-    loaded = true;
+      loaded = true;
+    } catch (error) {
+      console.error("Failed to load lectures:", error);
+    } finally {
+      isLoading = false;
+    }
+  };
+
+  // Debounced search function
+  const debouncedSearch = (value: string) => {
+    if (searchTimeout) {
+      clearTimeout(searchTimeout);
+    }
+    searchTimeout = setTimeout(() => {
+      searchBarInput = value;
+    }, 300);
   };
 
   onMount(async () => {
@@ -119,6 +136,16 @@
 
     return basicMatch && timeMatch && locationMatch && lecturerMatch;
   };
+
+  let filteredLectures: Lecture[] = $state([]);
+
+  $effect(() => {
+    filteredLectures = lectures.filter((item) => 
+      (item.properties.branch === currentBranch || currentBranch === "ALL") && 
+      validateSearchQuery(item) && 
+      item.offset == currentOffset
+    );
+  });
 
   function jumpToCurrentTime() {
     const now = new Date();
@@ -192,7 +219,8 @@
         <div class="flex flex-row w-full gap-2 mt-2">
           <Input
             class="text-sm w-full"
-            bind:value={searchBarInput}
+            value={searchBarInput}
+            oninput={(e) => debouncedSearch((e.target as HTMLInputElement).value)}
             placeholder="DSE242.2F, Harison Hall, etc."
           ></Input>
           <Button
@@ -283,8 +311,7 @@
       </div>
     </div>
 
-
-    <div class="fixed left-0 bottom-0 z-50 w-full px-4 py-8">
+    <div class="fixed left-0 bottom-0 z-50 w-full px-4 py-8 sm:pb-8 pb-24">
       <div class="flex items-center justify-center">
         <div
           class="flex flex-row items-center justify-center gap-1 sm:gap-2 w-fit p-2 bg-black/80 backdrop-blur-sm rounded-3xl"
@@ -314,7 +341,7 @@
       </div>
     </div>
     {#if loaded}
-      {#if lectures.filter((item) => (item.properties.branch === currentBranch || currentBranch === "ALL") && validateSearchQuery(item) && item.offset == currentOffset).length === 0}
+      {#if filteredLectures.length === 0}
         <div class="h-full flex-1 flex flex-col gap-2 items-center">
           <h2 class="text-sm text-muted-foreground mt-10">
             {#if searchBarInput !== "" || filterTime || filterLocation || filterLecturer}
@@ -329,17 +356,33 @@
         </div>
       {:else}
         <div class="flex flex-col gap-2">
-          {#each lectures as item, i (item.title + "-" + item.time?.start + "-" + item.location?.hall + "-" + item.offset + "-" + item.batch?.join("-") + "-" + i)}
-            {#if item.properties.branch === currentBranch || currentBranch === "ALL"}
-              {#if !isOver(item) && validateSearchQuery(item) && item.offset == currentOffset}
-                <div id="lecture-{item.title}">
-                  <LectureSlide lecture={item} />
-                </div>
-              {/if}
+          {#each filteredLectures as item, i (item.title + "-" + item.time?.start + "-" + item.location?.hall + "-" + item.offset + "-" + item.batch?.join("-") + "-" + i)}
+            {#if !isOver(item)}
+              <div id="lecture-{item.title}">
+                <LectureSlide lecture={item} />
+              </div>
             {/if}
           {/each}
         </div>
       {/if}
+    {:else if isLoading}
+      <div class="flex flex-col gap-2 px-4">
+        {#each Array(5) as _, i}
+          <div class="ring-1 relative p-4 rounded-lg ring-muted bg-muted/25 animate-pulse">
+            <div class="flex items-center w-full justify-between">
+              <div class="h-3 bg-muted rounded w-20"></div>
+            </div>
+            <div class="flex items-center w-full justify-between mt-2">
+              <div class="h-5 bg-muted rounded w-48"></div>
+              <div class="h-3 bg-muted rounded w-16"></div>
+            </div>
+            <div class="flex mt-3 items-center w-full justify-between">
+              <div class="h-3 bg-muted rounded w-32"></div>
+              <div class="h-3 bg-muted rounded w-20"></div>
+            </div>
+          </div>
+        {/each}
+      </div>
     {:else}
       <div class="h-full flex-1 flex flex-col gap-2 items-center">
         <div class="mt-10 flex items-center flex-col gap-2">
@@ -353,8 +396,6 @@
       </div>
     {/if}
   </div>
-
-
 </div>
 
 <style>

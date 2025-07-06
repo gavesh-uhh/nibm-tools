@@ -57,8 +57,8 @@
 
 <div class="max-w-md mx-auto p-4 flex flex-col gap-4 bg-background rounded-xl shadow-lg mt-8 relative">
   {#if showSuccess}
-    <div class="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 z-10 w-full flex justify-center pointer-events-none">
-      <Alert class="mb-2 w-fit pointer-events-auto">Saved Successfully!</Alert>
+    <div class="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 z-10 w-full max-w-sm flex justify-center pointer-events-none">
+      <Alert class="mb-2 w-fit pointer-events-auto text-center">Saved Successfully!</Alert>
     </div>
   {/if}
   <div class="flex gap-2 items-center mb-1">

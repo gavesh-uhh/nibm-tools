@@ -12,6 +12,58 @@
   let is_going_on: boolean = $state(false);
   let progress: number = $state(0);
   let nearest_exam: Exam | null = $state(null);
+  let swipeStartX = 0;
+  let swipeStartY = 0;
+  let isSwiping = false;
+
+  // Haptic feedback function
+  function triggerHapticFeedback() {
+    if ('vibrate' in navigator) {
+      navigator.vibrate(30);
+    }
+  }
+
+  // Swipe gesture handlers
+  function handleTouchStart(event: TouchEvent) {
+    swipeStartX = event.touches[0].clientX;
+    swipeStartY = event.touches[0].clientY;
+    isSwiping = false;
+  }
+
+  function handleTouchMove(event: TouchEvent) {
+    if (!swipeStartX || !swipeStartY) return;
+    
+    const deltaX = event.touches[0].clientX - swipeStartX;
+    const deltaY = event.touches[0].clientY - swipeStartY;
+    
+    // Check if it's a horizontal swipe
+    if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 10) {
+      isSwiping = true;
+      event.preventDefault();
+    }
+  }
+
+  function handleTouchEnd(event: TouchEvent) {
+    if (!isSwiping) return;
+    
+    const deltaX = event.changedTouches[0].clientX - swipeStartX;
+    
+    if (Math.abs(deltaX) > 50) {
+      triggerHapticFeedback();
+      
+      if (deltaX > 0) {
+        // Swipe right - could be used for marking as attended
+        console.log('Swiped right - marked as attended');
+      } else {
+        // Swipe left - could be used for marking as missed
+        console.log('Swiped left - marked as missed');
+      }
+    }
+    
+    swipeStartX = 0;
+    swipeStartY = 0;
+    isSwiping = false;
+  }
 
   const findNearestExam = async () => {
     if (lecture.title == undefined) return;
@@ -46,6 +98,20 @@
     setInterval(() => {
       updateTime();
     }, 1000);
+
+    // Add swipe gesture listeners
+    const element = document.getElementById(`lecture-${lecture.title}`);
+    if (element) {
+      element.addEventListener('touchstart', handleTouchStart, { passive: false });
+      element.addEventListener('touchmove', handleTouchMove, { passive: false });
+      element.addEventListener('touchend', handleTouchEnd);
+
+      return () => {
+        element.removeEventListener('touchstart', handleTouchStart);
+        element.removeEventListener('touchmove', handleTouchMove);
+        element.removeEventListener('touchend', handleTouchEnd);
+      };
+    }
   });
 
   const updateTime = () => {
