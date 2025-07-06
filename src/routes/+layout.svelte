@@ -53,7 +53,7 @@
 {#if !isOnline}
   <div class="fixed top-0 left-0 right-0 bg-yellow-500 text-yellow-900 py-2 text-center z-50 flex items-center justify-center gap-2">
     <WifiOff class="w-4 h-4" />
-    <span class="text-sm font-medium">You're offline or slow network. Some features may not work.</span>
+    <span class="text-xs sm:text-sm font-medium">Offline or slow network. Some features may not work.</span>
   </div>
 {/if}
 
