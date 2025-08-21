@@ -31,7 +31,7 @@
   const downloadAllPapers = async () => {
     is_processing = true;
     try {
-      const downloadPromises = papers
+      const papersToDownload = papers
         .filter((paper) => {
           if (
             keywordInput &&
@@ -40,11 +40,31 @@
             return false;
           }
           return paper.url ? true : false;
-        })
-        .map(async (paper) => {
+        });
+
+      console.log(`Starting download of ${papersToDownload.length} papers...`);
+
+      // Download papers in small batches to avoid overwhelming the browser/server
+      const BATCH_SIZE = 3;
+      const DELAY_BETWEEN_BATCHES = 1000; // 1 second delay between batches
+
+      for (let i = 0; i < papersToDownload.length; i += BATCH_SIZE) {
+        const batch = papersToDownload.slice(i, i + BATCH_SIZE);
+        
+        const batchPromises = batch.map(async (paper, index) => {
           try {
             if (paper.url == null) return;
+            
+            // Add small delay between downloads in the same batch
+            if (index > 0) {
+              await new Promise(resolve => setTimeout(resolve, 200));
+            }
+            
             const response = await fetch(paper.url);
+            if (!response.ok) {
+              throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
             const blob = await response.blob();
             const url = window.URL.createObjectURL(blob);
             const link = document.createElement("a");
@@ -52,12 +72,23 @@
             link.download = (paper.batch + " " + paper.subject + ".pdf").trim();
             link.click();
             window.URL.revokeObjectURL(url);
+            
+            console.log(`Downloaded: ${paper.subject}`);
           } catch (error) {
             console.error(`Error downloading paper "${paper.subject}":`, error);
           }
         });
 
-      await Promise.all(downloadPromises);
+        await Promise.all(batchPromises);
+        
+        // Add delay between batches (except for the last batch)
+        if (i + BATCH_SIZE < papersToDownload.length) {
+          console.log(`Completed batch ${Math.floor(i / BATCH_SIZE) + 1}, waiting before next batch...`);
+          await new Promise(resolve => setTimeout(resolve, DELAY_BETWEEN_BATCHES));
+        }
+      }
+      
+      console.log("All downloads completed!");
     } catch (error) {
       console.error("Error in download process:", error);
     } finally {
