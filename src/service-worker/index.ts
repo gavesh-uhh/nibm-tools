@@ -21,7 +21,12 @@ self.addEventListener('install', (event) => {
     const cache = await caches.open(CACHE);
     await cache.addAll(ASSETS);
   }
-  event.waitUntil(addFilesToCache());
+  event.waitUntil((async () => {
+    await addFilesToCache();
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    self.skipWaiting();
+  })());
 });
 
 self.addEventListener('activate', (event) => {
@@ -31,7 +36,12 @@ self.addEventListener('activate', (event) => {
     }
   }
 
-  event.waitUntil(deleteOldCaches());
+  event.waitUntil((async () => {
+    await deleteOldCaches();
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    await self.clients.claim();
+  })());
 });
 
 self.addEventListener('fetch', (event) => {
@@ -62,7 +72,7 @@ self.addEventListener('fetch', (event) => {
         }
         const response = await fetch(event.request);
         if (response.status === 200) {
-          const data = await response.json();
+          const data = await response.clone().json();
           const cacheData = {
             data: data,
             cacheTime: Date.now()

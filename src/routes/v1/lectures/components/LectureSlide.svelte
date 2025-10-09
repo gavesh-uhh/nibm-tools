@@ -52,10 +52,8 @@
       triggerHapticFeedback();
       
       if (deltaX > 0) {
-        // Swipe right - could be used for marking as attended
         console.log('Swiped right - marked as attended');
       } else {
-        // Swipe left - could be used for marking as missed
         console.log('Swiped left - marked as missed');
       }
     }
@@ -69,7 +67,6 @@
     if (lecture.title == undefined) return;
     const searchCode =
       lecture.batch + (await getSuffixCode(lecture.properties.branch));
-    console.log("Searching for exams with code:", searchCode);
     const response = await fetch("/api/exams?examName=" + lecture.title.trim());
     const data = await response.json();
     const exams: Exam[] = data;
@@ -92,26 +89,28 @@
     }
   };
 
-  onMount(async () => {
+  onMount(() => {
     findNearestExam();
     updateTime();
-    setInterval(() => {
+    const intervalId = setInterval(() => {
       updateTime();
     }, 1000);
 
-    // Add swipe gesture listeners
     const element = document.getElementById(`lecture-${lecture.title}`);
     if (element) {
       element.addEventListener('touchstart', handleTouchStart, { passive: false });
       element.addEventListener('touchmove', handleTouchMove, { passive: false });
       element.addEventListener('touchend', handleTouchEnd);
+    }
 
-      return () => {
+    return () => {
+      if (element) {
         element.removeEventListener('touchstart', handleTouchStart);
         element.removeEventListener('touchmove', handleTouchMove);
         element.removeEventListener('touchend', handleTouchEnd);
-      };
-    }
+      }
+      clearInterval(intervalId);
+    };
   });
 
   const updateTime = () => {

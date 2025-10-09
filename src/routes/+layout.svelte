@@ -4,7 +4,7 @@
   let showContent = $state(false);
   let { children } = $props();
   import { onMount } from "svelte";
-  import { Loader2, Wifi, WifiOff } from "lucide-svelte";
+  import { Loader2, Loader, WifiOff } from "lucide-svelte";
 
   let isOnline = $state(navigator.onLine);
 
@@ -50,7 +50,12 @@
   </div>
 {/if}
 
-{#if !isOnline}
+{#if !showContent}
+  <div class="fixed top-0 left-0 right-0 bg-gray-500 text-gray-900 py-2 text-center z-50 flex items-center justify-center gap-2">
+    <Loader class="w-4 h-4 animate-spin" />
+    <span class="text-xs sm:text-sm font-medium">Gathering Intel...</span>
+  </div>
+{:else if !isOnline}
   <div class="fixed top-0 left-0 right-0 bg-yellow-500 text-yellow-900 py-2 text-center z-50 flex items-center justify-center gap-2">
     <WifiOff class="w-4 h-4" />
     <span class="text-xs sm:text-sm font-medium">Offline or slow network. Some features may not work.</span>

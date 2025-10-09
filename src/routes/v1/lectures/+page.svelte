@@ -289,11 +289,11 @@
           <button
             class="tag"
             onclick={() => {
-              searchBarInput = "DSE24.2F";
+              searchBarInput = "HNDSE24.2F";
             }}
-            aria-current={searchBarInput === "DSE24.2F" ? "true" : null}
+            aria-current={searchBarInput === "HNDSE24.2F" ? "true" : null}
           >
-            DSE24.2F
+            HNDSE24.2F
           </button>
           <button
             class="tag"

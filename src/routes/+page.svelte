@@ -56,16 +56,14 @@
     },
   ]);
 
-  // Pull-to-refresh variables
   let isRefreshing = $state(false);
   let pullStartY = 0;
   let pullDistance = 0;
   let isPulling = false;
 
-  // Haptic feedback function
   function triggerHapticFeedback() {
     if ("vibrate" in navigator) {
-      navigator.vibrate(50); // Short vibration for feedback
+      navigator.vibrate(50);
     }
   }
 
@@ -120,9 +118,13 @@
         "-" +
         currentDate.getDate();
 
-      const response = await fetch(
-        `/api/lectures?date=${dayString}&batch=${userBatch}&limit=3`,
-      );
+      const params = new URLSearchParams({
+        date: dayString,
+        batch: userBatch ?? '',
+        limit: '1',
+        branch: userBranch ?? ''
+      });
+      const response = await fetch(`/api/lectures?${params.toString()}`);
       const data = await response.json();
       let found = false;
       for (const lec of data) {
@@ -148,7 +150,6 @@
     }
   };
 
-  // Pull-to-refresh handlers
   function handleTouchStart(event: TouchEvent) {
     if (window.scrollY === 0) {
       pullStartY = event.touches[0].clientY;
@@ -213,7 +214,6 @@
     getPendingLectures();
     setTimeout(preloadLectures, 1000);
 
-    // Add pull-to-refresh event listeners
     document.addEventListener("touchstart", handleTouchStart, {
       passive: false,
     });
@@ -316,110 +316,62 @@
     </p>
   </div>
 
-  {#if userSettings.batch && isCheckingLecture}
-    <div class="w-full px-2 sm:px-8">
-      <div class="relative w-full max-w-xl mx-auto">
-        <Alert.Root variant="default" class="w-full rounded-xl ">
-          <div class="flex flex-col gap-1 items-center justify-center py-4">
-            <span
-              class="text-xs text-muted-foreground flex flex-row gap-2 items-center font-medium uppercase tracking-wide mb-1"
-            >
-              <Loader class="w-4 h-4 animate-spin" />
-              Checking for your next lecture...</span
-            >
-          </div>
-        </Alert.Root>
-      </div>
-    </div>
-  {/if}
+  
 
-  <div
-    class="mb-4 px-2 sm:px-8 w-full flex items-center justify-center overflow-x-hidden"
-  >
-    {#if showNoLectures}
-      <div
-        class="relative w-full max-w-xl mx-auto overflow-hidden"
-        in:fade={{ duration: 300 }}
-        out:fade={{ duration: 600 }}
-      >
+  {#if userSettings.batch}
+    <div
+      class="mb-4 px-2 sm:px-8 w-full flex items-center justify-center overflow-x-hidden"
+    >
+      <div class="relative w-full max-w-xl mx-auto overflow-hidden" class:glowing-border={nextLecture != undefined}>
         <Alert.Root
-          variant="destructive"
-          class="w-full rounded-xl min-h-[120px] flex items-center"
+          variant="default"
+          class="w-full rounded-xl min-h-[96px] flex items-center"
         >
-          <div
-            class="flex flex-col gap-1 items-center justify-center py-4 w-full"
-          >
-            <span class="text-lg font-bold text-destructive"
-              >NO LECTURES FOUND :(</span
-            >
+        {#if isCheckingLecture}
+          <div class="flex items-center justify-center gap-2 w-full py-3">
+            <Loader class="w-4 h-4 animate-spin" />
+            <span class="text-xs text-muted-foreground font-medium uppercase tracking-wide">Finding your next lecture...</span>
           </div>
-        </Alert.Root>
-      </div>
-    {:else if nextLecture != undefined}
-      <div class="relative w-full max-w-xl mx-auto overflow-hidden">
-        <div class="glowing-border">
-          <Alert.Root
-            variant="default"
-            class="w-full rounded-xl min-h-[120px] relative overflow-hidden"
-          >
-            <div class="flex flex-col gap-1 py-2 px-1">
-              <span
-                class="text-xs text-muted-foreground font-medium uppercase tracking-wide"
-              >
-                Next
-                {#if nextLecture.properties.is_exam}
-                  Exam
-                {:else}
-                  Lecture
-                {/if}
+        {:else if nextLecture != undefined}
+          <div class="w-full py-2 px-2">
+            <div class="flex flex-col gap-1">
+              <span class="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">
+                Next {#if nextLecture.properties.is_exam}Exam{:else}Lecture{/if}
               </span>
-              <Alert.Title
-                class="text-base sm:text-lg font-semibold text-foreground break-words"
-              >
+              <Alert.Title class="text-sm sm:text-base font-semibold text-foreground break-words">
                 {nextLecture.title}
               </Alert.Title>
-
               <Alert.Description>
-                <div
-                  class="flex flex-col sm:flex-row sm:items-center sm:gap-4 text-sm text-muted-foreground space-y-1 sm:space-y-0"
-                >
+                <div class="flex flex-col sm:flex-row sm:items-center sm:gap-3 text-xs text-muted-foreground space-y-1 sm:space-y-0">
                   {#if nextLecture.properties.is_exam}
                     <span class="flex-shrink-0">
                       <span class="font-medium text-red-600">EXAM</span>
                     </span>
                   {:else}
-                    <span
-                      class="flex-shrink-0 break-words flex items-center gap-1"
-                    >
+                    <span class="flex-shrink-0 break-words flex items-center gap-1">
                       by
-                      <span
-                        class="font-medium text-foreground flex items-center gap-1"
-                      >
-                        {nextLecture.lecturer}
-                      </span>
-                      <span class="flex-shrink-0 flex gap-1 items-center">
-                        - <Clock class="w-4 h-4" />({nextLecture.time.start} -
-                        {nextLecture.time.end})
-                      </span>
+                      <span class="font-medium text-foreground flex items-center gap-1">{nextLecture.lecturer}</span>
+                      <span class="flex-shrink-0 flex gap-1 items-center">- <Clock class="w-4 h-4" />({nextLecture.time.start} - {nextLecture.time.end})</span>
                     </span>
                   {/if}
-
                   <span class="hidden sm:inline flex-shrink-0">&bull;</span>
-
-                  <span
-                    class="flex-shrink-0 break-words flex items-center gap-1"
-                  >
+                  <span class="flex-shrink-0 break-words flex items-center gap-1">
                     <MapPin class="w-4 h-4" />
                     {nextLecture.location.hall} - {nextLecture.location.floor}
                   </span>
                 </div>
               </Alert.Description>
             </div>
-          </Alert.Root>
-        </div>
+          </div>
+        {:else}
+          <div class="flex items-center justify-center w-full py-3">
+            <span class="text-xs text-muted-foreground">You're all caught up — no upcoming lectures.</span>
+          </div>
+        {/if}
+        </Alert.Root>
       </div>
-    {/if}
-  </div>
+    </div>
+  {/if}
 
   <div id="modules" class="grid grid-cols-1 gap-4 px-2 sm:px-8 md:grid-cols-2">
     {#each sortedModules as module}
@@ -557,31 +509,31 @@
   @property --clr-1 {
     syntax: "<color>";
     inherits: true;
-    initial-value: #8b5cf6;
+    initial-value: #8b5cf675;
   }
 
   @property --clr-2 {
     syntax: "<color>";
     inherits: true;
-    initial-value: #3b82f6;
+    initial-value: #3b82f675;
   }
 
   @property --clr-3 {
     syntax: "<color>";
     inherits: true;
-    initial-value: #ec4899;
+    initial-value: #ec489975;
   }
 
   @property --clr-4 {
     syntax: "<color>";
     inherits: true;
-    initial-value: #8b5cf6;
+    initial-value: #8b5cf675;
   }
 
   @property --clr-5 {
     syntax: "<color>";
     inherits: true;
-    initial-value: #3b82f6;
+    initial-value: #3b82f675;
   }
 
   .glowing-border {
@@ -597,7 +549,6 @@
       conic-gradient(from var(--glow-deg), var(--gradient-glow)) border-box;
     position: relative;
     isolation: isolate;
-
     animation: glow 10s infinite linear;
   }
 

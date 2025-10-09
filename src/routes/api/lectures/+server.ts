@@ -14,23 +14,43 @@ const cache = new Map<string, { data: Lecture[], timestamp: number }>();
 const CACHE_DURATION = 5 * 60 * 1000; 
 
 export const GET = async ({ url }: { url: URL }): Promise<Response> => {
+  const startedAt = Date.now();
   const date = url.searchParams.get("date");
   const day_limit = parseInt(url.searchParams.get("limit") ?? "3");
   const batch = url.searchParams.get("batch");
+  const branchFilter = url.searchParams.get("branch");
   if (!date) return json({ error: "Date is required" }, { status: 400 });
 
-  const cacheKey = `${date}-${day_limit}-${batch || 'all'}`;
+  const cacheKey = `${date}-${day_limit}-${batch || 'all'}-${branchFilter || 'all'}`;
   
   const cached = cache.get(cacheKey);
   if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
-    return json(cached.data);
+    const tookMs = Date.now() - startedAt;
+    console.log(`[lectures] cache HIT`, {
+      date,
+      day_limit,
+      batch,
+      branch: branchFilter,
+      count: cached.data.length,
+      tookMs
+    });
+    return json(cached.data, {
+      headers: {
+        'x-cache': 'HIT',
+        'x-duration-ms': String(tookMs),
+        'x-count': String(cached.data.length)
+      }
+    });
   }
 
   const requests: Promise<Lecture[]>[] = [];
 
   for (let i = 0; i < day_limit; i++) {
     const futureDate = getOffsettedDate(date, i);
-    const branchRequests = SUPPORTED_BRANCHES.map((branch) =>
+    const branchesToFetch = branchFilter
+      ? SUPPORTED_BRANCHES.filter((b) => b.name === branchFilter)
+      : SUPPORTED_BRANCHES;
+    const branchRequests = branchesToFetch.map((branch) =>
       fetchData(`${SCRAPE_URL}?wing=${branch.keyword}&date=${futureDate}`, branch.name, i)
     );
     requests.push(...branchRequests);
@@ -41,10 +61,25 @@ export const GET = async ({ url }: { url: URL }): Promise<Response> => {
     ? results.filter((lecture) => lecture.batch && lecture.batch.includes(batch))
     : results;
   
-  // Cache the result
-  cache.set(cacheKey, { data: filtered, timestamp: Date.now() });
   
-  return json(filtered);
+  cache.set(cacheKey, { data: filtered, timestamp: Date.now() });
+  const tookMs = Date.now() - startedAt;
+  console.log(`[lectures] cache MISS`, {
+    date,
+    day_limit,
+    batch,
+    branch: branchFilter,
+    count: filtered.length,
+    tookMs
+  });
+  
+  return json(filtered, {
+    headers: {
+      'x-cache': 'MISS',
+      'x-duration-ms': String(tookMs),
+      'x-count': String(filtered.length)
+    }
+  });
 };
 
 const fetchData = async (url: string, branch: string, offset: number): Promise<Lecture[]> => {
