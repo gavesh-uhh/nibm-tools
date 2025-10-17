@@ -16,14 +16,12 @@
   let swipeStartY = 0;
   let isSwiping = false;
 
-  // Haptic feedback function
   function triggerHapticFeedback() {
     if ('vibrate' in navigator) {
       navigator.vibrate(30);
     }
   }
 
-  // Swipe gesture handlers
   function handleTouchStart(event: TouchEvent) {
     swipeStartX = event.touches[0].clientX;
     swipeStartY = event.touches[0].clientY;
@@ -36,7 +34,6 @@
     const deltaX = event.touches[0].clientX - swipeStartX;
     const deltaY = event.touches[0].clientY - swipeStartY;
     
-    // Check if it's a horizontal swipe
     if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 10) {
       isSwiping = true;
       event.preventDefault();

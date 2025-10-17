@@ -72,7 +72,6 @@
       const data = await response.json();
       lectures = data;
 
-      // Extract unique lecturers and floors
       lecturers = [
         ...new Set(data.map((l: Lecture) => l.lecturer).filter(Boolean)),
       ].sort() as string[];
@@ -88,7 +87,6 @@
     }
   };
 
-  // Debounced search function
   const debouncedSearch = (value: string) => {
     if (searchTimeout) {
       clearTimeout(searchTimeout);
@@ -218,13 +216,14 @@
         </h1>
         <div class="flex flex-row w-full gap-2 mt-2">
           <Input
-            class="text-sm w-full"
+            class="text-sm w-full rounded-2xl"
             value={searchBarInput}
             oninput={(e) => debouncedSearch((e.target as HTMLInputElement).value)}
             placeholder="DSE242.2F, Harison Hall, etc."
           ></Input>
           <Button
             size="icon"
+            class="rounded-[50%] w-10 h-9"
             variant="destructive"
             onclick={() => {
               searchBarInput = "";
@@ -237,6 +236,7 @@
           </Button>
           <Button
             size="icon"
+                       class="rounded-[50%] w-10 h-9"
             variant="outline"
             onclick={() => (showFilters = !showFilters)}
           >

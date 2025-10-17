@@ -298,8 +298,8 @@
       <Button
         href="https://www.buymeacoffee.com/gaveshsaparamadu"
         size="lg"
-        class="bg-primary-foreground text-primary hover:bg-primary-foreground/90 h-12"
-        >🍻 Support the Project</Button
+        class="bg-primary-foreground text-primary rounded-3xl hover:bg-primary-foreground/90 h-12"
+        >🍻 <span class="ml-3">Support the Project</span></Button
       >
       {#if getDeviceType() == "android" || getDeviceType() == "iphone"}
         <Button
@@ -312,7 +312,8 @@
       {/if}
     </div>
     <p class="mt-4 text-xs text-muted-foreground">
-      Developed with ❤️ by Gavesh
+      Developed with ❤️ by Gavesh <br>
+      (This website is not affiliated with NIBM in any way.)
     </p>
   </div>
 
@@ -376,7 +377,7 @@
   <div id="modules" class="grid grid-cols-1 gap-4 px-2 sm:px-8 md:grid-cols-2">
     {#each sortedModules as module}
       <div
-        class="w-full flex flex-col justify-between rounded-xl ring-1 ring-border p-4 sm:p-6 relative"
+        class="w-full flex flex-col justify-between rounded-2xl ring-1 ring-border p-4 sm:p-6 relative"
       >
         <div>
           <h1 class="text-xl sm:text-2xl font-semibold">{module.name}</h1>
@@ -390,13 +391,13 @@
             class="flex flex-wrap sm:flex-row gap-3 sm:justify-between items-center"
           >
             {#if module.hidden}
-              <Button disabled class="w-fit sm:w-auto">
-                <ExternalLink class="w-4 h-4 mr-2" />
+              <Button disabled class="w-fit rounded-2xl sm:w-auto">
+                <ExternalLink class="w-4 h-4 mr-3 " />
                 Coming Soon
               </Button>
             {:else}
-              <Button href={module.linkUrl} class="w-fit  sm:w-auto">
-                <ExternalLink class="w-4 h-4 mr-2" />
+              <Button href={module.linkUrl} class="w-fit rounded-2xl sm:w-auto">
+                <ExternalLink class="w-4 h-4 mr-3" />
                 {module.linkTitle ?? "Open"}
               </Button>
             {/if}
