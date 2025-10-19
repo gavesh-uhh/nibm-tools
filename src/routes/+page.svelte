@@ -432,7 +432,7 @@
         <Github class="h-6 w-6" />
       </a>
       <a
-        href="https://www.gavesh.live"
+        href="https://www.gavesh.me"
         target="_blank"
         rel="noopener noreferrer"
         class="text-muted-foreground transition-colors hover:text-foreground"
