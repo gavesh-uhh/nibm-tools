@@ -17,7 +17,7 @@
   let isSwiping = false;
 
   function triggerHapticFeedback() {
-    if ('vibrate' in navigator) {
+    if ("vibrate" in navigator) {
       navigator.vibrate(30);
     }
   }
@@ -30,10 +30,10 @@
 
   function handleTouchMove(event: TouchEvent) {
     if (!swipeStartX || !swipeStartY) return;
-    
+
     const deltaX = event.touches[0].clientX - swipeStartX;
     const deltaY = event.touches[0].clientY - swipeStartY;
-    
+
     if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 10) {
       isSwiping = true;
       event.preventDefault();
@@ -42,19 +42,19 @@
 
   function handleTouchEnd(event: TouchEvent) {
     if (!isSwiping) return;
-    
+
     const deltaX = event.changedTouches[0].clientX - swipeStartX;
-    
+
     if (Math.abs(deltaX) > 50) {
       triggerHapticFeedback();
-      
+
       if (deltaX > 0) {
-        console.log('Swiped right - marked as attended');
+        console.log("Swiped right - marked as attended");
       } else {
-        console.log('Swiped left - marked as missed');
+        console.log("Swiped left - marked as missed");
       }
     }
-    
+
     swipeStartX = 0;
     swipeStartY = 0;
     isSwiping = false;
@@ -95,16 +95,20 @@
 
     const element = document.getElementById(`lecture-${lecture.title}`);
     if (element) {
-      element.addEventListener('touchstart', handleTouchStart, { passive: false });
-      element.addEventListener('touchmove', handleTouchMove, { passive: false });
-      element.addEventListener('touchend', handleTouchEnd);
+      element.addEventListener("touchstart", handleTouchStart, {
+        passive: false,
+      });
+      element.addEventListener("touchmove", handleTouchMove, {
+        passive: false,
+      });
+      element.addEventListener("touchend", handleTouchEnd);
     }
 
     return () => {
       if (element) {
-        element.removeEventListener('touchstart', handleTouchStart);
-        element.removeEventListener('touchmove', handleTouchMove);
-        element.removeEventListener('touchend', handleTouchEnd);
+        element.removeEventListener("touchstart", handleTouchStart);
+        element.removeEventListener("touchmove", handleTouchMove);
+        element.removeEventListener("touchend", handleTouchEnd);
       }
       clearInterval(intervalId);
     };
@@ -168,6 +172,10 @@
 </script>
 
 <div class="ring-1 relative p-4 rounded-lg ring-muted bg-muted/25">
+  <div class="hidden hover:block absolute">
+    <h1>Hover Test</h1>
+  </div>
+
   {#if lecture.properties.is_exam}
     <div class="red-gradient"></div>
   {/if}
