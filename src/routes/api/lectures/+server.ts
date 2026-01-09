@@ -35,14 +35,7 @@ export const GET = async ({ url }: { url: URL }): Promise<Response> => {
   const cached = cache.get(cacheKey);
   if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
     const tookMs = Date.now() - startedAt;
-    console.log(`[lectures] cache HIT`, {
-      date,
-      day_limit,
-      batch,
-      branch: branchFilter,
-      count: cached.data.length,
-      tookMs
-    });
+    console.log("[NIBM:Toolkit] Cache hit for key:", cacheKey);
     return json(cached.data, {
       headers: {
         "x-cache": "HIT",
@@ -81,15 +74,7 @@ export const GET = async ({ url }: { url: URL }): Promise<Response> => {
 
   cache.set(cacheKey, { data: filtered, timestamp: Date.now() });
   const tookMs = Date.now() - startedAt;
-  console.log(`[lectures] cache MISS`, {
-    date,
-    day_limit,
-    batch,
-    branch: branchFilter,
-    count: filtered.length,
-    tookMs
-  });
-
+ 
   return json(filtered, {
     headers: {
       "x-cache": "MISS",
