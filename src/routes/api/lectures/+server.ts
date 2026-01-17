@@ -9,7 +9,9 @@ const CONCURRENT_LIMIT = 3;
 const SUPPORTED_BRANCHES = [
   { keyword: "CO", name: "SOC" },
   { keyword: "NIC", name: "NIC" },
-  { keyword: "RJ", name: "SOB" }
+  { keyword: "RJ", name: "SOB" },
+  { keyword: "KD", name: "KD" },
+  { keyword: "KIC", name: "KIC" },
 ];
 
 const cache = new Map<string, { data: Lecture[]; timestamp: number }>();
@@ -192,3 +194,6 @@ const getOffsettedDate = (startDate: string, offset: number): string => {
   return date.toISOString().split("T")[0];
 };
 
+export {
+  fetchData
+}

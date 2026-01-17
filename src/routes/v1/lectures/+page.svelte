@@ -16,7 +16,7 @@
   import { onMount } from "svelte";
 
   const toggleBranch = () => {
-    const branches = ["SOC", "NIC", "SOB", "ALL"];
+    const branches = ["SOC", "NIC", "SOB", "KD", "KIC", "ALL"];
     const currentIndex = branches.indexOf(currentBranch);
     const nextIndex = (currentIndex + 1) % branches.length;
     currentBranch = branches[nextIndex];
@@ -42,6 +42,8 @@
     if (currentBranch === "SOC") return "soc";
     if (currentBranch === "SOB") return "sob";
     if (currentBranch === "NIC") return "nic";
+    if (currentBranch === "KD") return "kd";
+    if (currentBranch === "KIC") return "kic";
     return "";
   };
 
@@ -66,7 +68,7 @@
       (currentDate.getMonth() + 1) +
       "-" +
       currentDate.getDate();
-    
+
     try {
       const response = await fetch("/api/lectures?date=" + dayString);
       const data = await response.json();
@@ -138,10 +140,11 @@
   let filteredLectures: Lecture[] = $state([]);
 
   $effect(() => {
-    filteredLectures = lectures.filter((item) => 
-      (item.properties.branch === currentBranch || currentBranch === "ALL") && 
-      validateSearchQuery(item) && 
-      item.offset == currentOffset
+    filteredLectures = lectures.filter(
+      (item) =>
+        (item.properties.branch === currentBranch || currentBranch === "ALL") &&
+        validateSearchQuery(item) &&
+        item.offset == currentOffset,
     );
   });
 
@@ -218,7 +221,8 @@
           <Input
             class="text-sm w-full rounded-2xl"
             value={searchBarInput}
-            oninput={(e) => debouncedSearch((e.target as HTMLInputElement).value)}
+            oninput={(e) =>
+              debouncedSearch((e.target as HTMLInputElement).value)}
             placeholder="DSE242.2F, Harison Hall, etc."
           ></Input>
           <Button
@@ -236,7 +240,7 @@
           </Button>
           <Button
             size="icon"
-                       class="rounded-[50%] w-10 h-9"
+            class="rounded-[50%] w-10 h-9"
             variant="outline"
             onclick={() => (showFilters = !showFilters)}
           >
@@ -368,7 +372,9 @@
     {:else if isLoading}
       <div class="flex flex-col gap-2 px-4">
         {#each Array(5) as _, i}
-          <div class="ring-1 relative p-4 rounded-lg ring-muted bg-muted/25 animate-pulse">
+          <div
+            class="ring-1 relative p-4 rounded-lg ring-muted bg-muted/25 animate-pulse"
+          >
             <div class="flex items-center w-full justify-between">
               <div class="h-3 bg-muted rounded w-20"></div>
             </div>
@@ -441,6 +447,14 @@
 
   .branch-select.soc {
     --lecture-grad: #0e98ba9f;
+  }
+
+  .branch-select.kd {
+    --lecture-grad: #a84a919f;
+  }
+
+  .branch-select.kic {
+    --lecture-grad: #7b4aa89f;
   }
 
   .tag {
