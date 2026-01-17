@@ -194,6 +194,3 @@ const getOffsettedDate = (startDate: string, offset: number): string => {
   return date.toISOString().split("T")[0];
 };
 
-export {
-  fetchData
-}
