@@ -17,10 +17,10 @@ export const POST = async ({ request }: { request: Request }) => {
         if (!response.ok) {
           throw new Error(`Failed to fetch paper from ${paper.url}`);
         }
-        
+
         const arrayBuffer = await response.arrayBuffer();
         const base64 = Buffer.from(arrayBuffer).toString("base64");
-        
+
         return {
           base64,
           name: paper.subject || paper.title || "Unknown Paper"
@@ -28,7 +28,6 @@ export const POST = async ({ request }: { request: Request }) => {
       })
     );
 
-    // Generate questions stream
     const stream = await generateQuestionsStreamFromPapers(pdfs, count, questionType, additionalContext);
 
     const readable = new ReadableStream({

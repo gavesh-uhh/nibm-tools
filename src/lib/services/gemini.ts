@@ -15,10 +15,10 @@ export const generateQuestionsStreamFromPapers = async (
   questionType: string = "Theory",
   additionalContext: string = ""
 ) => {
-  const model = "gemini-3-flash-preview";
+  const model = "gemini-3.1-flash-lite-preview";
 
-  const contextStr = additionalContext.trim() 
-    ? `\nAdditionally, please adhere to the following custom instructions:\n"${additionalContext}"\n` 
+  const contextStr = additionalContext.trim()
+    ? `\nAdditionally, please adhere to the following custom instructions:\n"${additionalContext}"\n`
     : "";
 
   let typeInstructions = "";
@@ -63,9 +63,9 @@ ${contextStr}`;
         responseSchema: {
           type: Type.OBJECT,
           properties: {
-            analysis: { 
-              type: Type.STRING, 
-              description: "Extremely thorough, step-by-step analysis and synthesis of the provided materials." 
+            analysis: {
+              type: Type.STRING,
+              description: "Extremely thorough, step-by-step analysis and synthesis of the provided materials."
             },
             questions: {
               type: Type.ARRAY,
