@@ -50,9 +50,8 @@
       id: "questions",
       name: "Question Generator",
       desc: "Generate questions from past papers to test your knowledge with AI. It's like having a tutor, but free.",
-      linkTitle: "",
-      linkUrl: "#",
-      hidden: true,
+      linkTitle: "Generate Quiz",
+      linkUrl: "/v1/quiz",
     },
   ]);
 
